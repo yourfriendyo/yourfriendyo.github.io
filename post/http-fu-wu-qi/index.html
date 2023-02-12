@@ -1,0 +1,922 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HTTP服务器 | AKA你的闺蜜的博客</title>
+<link rel="shortcut icon" href="https://yourfriendyo.github.io/favicon.ico?v=1676169831140">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://yourfriendyo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="HTTP服务器 | AKA你的闺蜜的博客 - Atom Feed" href="https://yourfriendyo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="HTTP服务器
+1. 项目背景和技术特点
+实现目的
+
+从移动端到浏览器，HTTP 协议无疑是打开互联网应用窗口的重要协议，其在网络应用层中的地位不可撼动，是能准确区分前后台的重要协议。
+
+完善对HTTP协议的理论学习，从零开始完成WEB服务..." />
+    <meta name="keywords" content="Project" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://yourfriendyo.github.io">
+  <img class="avatar" src="https://yourfriendyo.github.io/images/avatar.png?v=1676169831140" alt="">
+  </a>
+  <h1 class="site-title">
+    AKA你的闺蜜的博客
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/cv.html" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              HTTP服务器
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-15
+              </span>
+              <span>
+                15 min read
+              </span>
+              
+                <a href="https://yourfriendyo.github.io/tag/li__VqR4N/" class="post-tag">
+                  # Project
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://img.gejiba.com/images/60227f51c300c20f1f1b5879101d5270.png" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="http服务器">HTTP服务器</h1>
+<h2 id="1-项目背景和技术特点">1. 项目背景和技术特点</h2>
+<h3 id="实现目的">实现目的</h3>
+<blockquote>
+<p>从移动端到浏览器，HTTP 协议无疑是打开互联网应用窗口的重要协议，其在网络应用层中的地位不可撼动，是能准确区分前后台的重要协议。</p>
+</blockquote>
+<p>完善对HTTP协议的理论学习，从零开始完成WEB服务器开发。</p>
+<p>采用 CS 模型，编写支持中小型应用的HTTP服务器，井结合MySQL。</p>
+<p>该项目可以帮助我们从技术上理解上网输入网站URL到关闭浏览器到所有操作中的技术细节。</p>
+<p><a href="https://blog.csdn.net/yourfriendyo/article/details/126188159">HTTP基础知识，这里就不再赘述了</a></p>
+<h3 id="技术特点">技术特点</h3>
+<ul>
+<li>Linux 网络编程 TCP/IP协议、socket流式套接、http协议。</li>
+<li>多线程技术</li>
+<li>cgi 技术</li>
+<li>shell 脚本</li>
+<li>线程池</li>
+</ul>
+<h3 id="开发环境">开发环境</h3>
+<ul>
+<li>centos7</li>
+<li>vim gcc/g++ Makefile</li>
+</ul>
+<p> </p>
+<h2 id="2-代码结构和实现思路">2. 代码结构和实现思路</h2>
+<h3 id="tcpserver">TcpServer</h3>
+<p>先实现HTTP的底层协议TCP的代码，也就是完成基本的网络套接字代码。实现成单例模式以供上层调用。</p>
+<pre><code class="language-cpp">//TcpServer.hpp
+#pragma once
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;cstdlib&gt;
+#include &lt;cstring&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;arpa/inet.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;fcntl.h&gt;
+
+#define BACK_LOG 5
+
+class TcpServer
+{
+private:
+    int _port;
+    int _listen_sock;
+
+    TcpServer(int port) : _port(port), _listen_sock(-1)
+    {}
+    TcpServer(const TcpServer&amp; ts) = delete;
+    TcpServer operator=(const TcpServer&amp; ts) = delete;
+
+    static TcpServer* _svr;
+public:
+
+    static TcpServer* GetInstance(int port);
+    void InitServer();
+
+    void Socket();
+    void Bind();
+    void Listen();
+    ~TcpServer()
+    {}
+};
+TcpServer* TcpServer::_svr = nullptr;
+</code></pre>
+<h3 id="httpserver">HttpServer</h3>
+<p>HttpServer类实现调用TcpServer单例，并进入事件循环。</p>
+<pre><code class="language-cpp">#pragma once
+#include &lt;iostream&gt;
+#include &lt;pthread.h&gt;
+#include &quot;TcpServer.hpp&quot;
+#include &quot;Protocol.hpp&quot;
+
+#define PORT 8080
+
+class HttpServer
+{
+private:
+    int _port;
+    TcpServer* _tcp_svr;
+    bool _stop;
+
+public:
+    HttpServer(int port = PORT) : _port(port), _tcp_svr(nullptr), _stop(false)
+    {}
+
+    void InitServer() {
+        _tcp_svr = TcpServer::GetInstance(_port);
+    }
+
+    void Loop();
+    
+    ~HttpServer()
+    {}
+};
+</code></pre>
+<p>接下来就是，读取请求，分析请求，构建响应并返回。</p>
+<h3 id="protocol">Protocol</h3>
+<p>定制HTTP请求和响应的协议。接着就是<code>EndPoint</code>类实现HTTP读取解析响应等一系列函数。</p>
+<pre><code class="language-cpp">struct HttpRequest
+{
+    std::string _request_line;
+    std::vector&lt;std::string&gt; _request_headers;
+    std::string _blank;
+    std::string _request_body;
+
+    std::string _method;
+    std::string _uri;
+    std::string _version;
+
+    std::string _path;
+    std::string _query;
+    struct stat _resoucre_stat;
+    bool _cgi = false;
+
+    std::unordered_map&lt;std::string, std::string&gt; _header_kvs;
+};
+
+struct HttpResponse
+{
+    std::string _status_line;
+    std::vector&lt;std::string&gt; _response_headers;
+    std::string _blank = LINE_BREAK;
+    std::string response_body;
+
+    int _status_code = OK; 
+    int _resource_fd = -1;
+};
+</code></pre>
+<pre><code class="language-cpp">class EndPoint
+{
+private:
+    int _sock;
+    HttpRequest _http_request;
+    HttpResponse _http_response;
+
+private:
+    void RecvHttpRequestLine();
+    void RecvHttpRequestHeadler();
+
+    void ParseHttpRequestLine();
+    void ParseHttpRequestHeadler();
+    void RecvParseHttpRequestBody();
+
+	int ProcessCgi();
+	int ProcessWebPage();
+
+public:
+    EndPoint(int sock) : _sock(sock) {}
+
+    void RecvHttpRequest()
+    {
+        RecvHttpRequestLine();
+        RecvHttpRequestHeadler();
+    }
+    void ParseHttpRequest()
+    {
+        ParseHttpRequestLine();
+        ParseHttpRequestHeadler();
+        RecvParseHttpRequestBody();
+    }
+	void BuildHttpResponse();
+    void SendHttpResponse();
+
+    ~EndPoint()
+    {}
+};
+</code></pre>
+<h4 id="读取和解析请求">读取和解析请求</h4>
+<p>当前请求时，我们以行为单位。</p>
+<p>从各大平台发来的数据的行分隔符各有不同，我们要做的是兼容所有情况，也就是我们要自行实现读取一行数据的接口。</p>
+<pre><code class="language-cpp">void EndPoint::RecvHttpRequestLine()
+{
+    std::string&amp; line = _http_request._request_line;
+    Util::ReadLine(_sock, &amp;line);
+    line.resize(line.size() - 1);
+}
+void EndPoint::RecvHttpRequestHeadler()
+{
+    std::string line;
+    while (true) // 读到空行，读取结束
+    {
+        Util::ReadLine(_sock, &amp;line);
+        if (line == &quot;\n&quot;) {
+            _http_request._blank = line; // 将空行放到blank中
+            break;
+        }
+        line.resize(line.size() - 1);
+        _http_request._request_headers.push_back(std::move(line));
+        line.clear();
+    }
+}
+
+void EndPoint::ParseHttpRequestLine()
+{
+    std::stringstream ss(_http_request._request_line);
+    ss &gt;&gt; _http_request._method &gt;&gt; _http_request._uri &gt;&gt; _http_request._version;
+}
+void EndPoint::ParseHttpRequestHeadler()
+{
+    for (auto&amp; header : _http_request._request_headers)
+        _http_request._header_kvs.insert(Util::GetKV(header, &quot;: &quot;));
+}
+void EndPoint::RecvParseHttpRequestBody()
+{
+    auto&amp; method = _http_request._method;
+    auto&amp; headers_map = _http_request._header_kvs;
+    auto&amp; body = _http_request._request_body;
+    auto iter = headers_map.find(&quot;Content-Length&quot;);
+    if (iter == headers_map.end())
+        return;
+    else
+        _http_request._content_length = stoi(iter-&gt;second);
+    Util::ReadLine(_sock, &amp;body);
+    body.resize(body.size() - 1);
+}
+</code></pre>
+<h4 id="构建和返回响应">构建和返回响应</h4>
+<p>如果是GET方法获取资源路径，并进行一系列的检查判断。根据请求资源的类型设置CGI处理，如果是POST方法直接设置CGI。</p>
+<pre><code class="language-cpp">void EndPoint::BuildHttpResponse()
+{
+    auto&amp; code = _http_response._status_code;
+    auto&amp; path = _http_request._path;
+    auto&amp; rsrc_st = _http_request._resoucre_stat;
+
+    // 排除非法请求
+    if (_http_request._method != &quot;GET&quot; &amp;&amp; _http_request._method != &quot;POST&quot;) {
+        LOG(WARNING) &lt;&lt; &quot;bad request invaild method\n&quot;;
+        code = BAD_REQUEST;
+        goto END;
+    }
+
+    if (_http_request._method == &quot;GET&quot;) {
+        size_t pos = _http_request._uri.find('?');
+        if (pos != std::string::npos) {
+            Util::CutString(_http_request._uri, &amp;path, &amp;_http_request._query, pos);
+            _http_request._cgi = true; // 带参一定用cgi
+        }
+        else 
+            path = _http_request._uri;
+
+        // 检查资源路径
+        path = WEB_ROOT + path; // 拼接web根目录前缀
+        if (path.back() == '/')
+            path += HOME_PAGE; // 拼接默认访问资源后缀
+
+        //判断资源路径是否合法
+        if (stat(path.c_str(), &amp;rsrc_st) == 0) {
+            if (S_ISDIR(rsrc_st.st_mode)) {
+                path += &quot;/&quot; + HOME_PAGE;
+                stat(path.c_str(), &amp;rsrc_st);
+            }
+            if (rsrc_st.st_mode &amp; S_IXUSR ||
+                rsrc_st.st_mode &amp; S_IXGRP ||
+                rsrc_st.st_mode &amp; S_IXOTH)
+                _http_request._cgi = true;
+        }
+        else {
+            LOG(WARNING) &lt;&lt; &quot;require &quot; &lt;&lt; path + &quot; resource not found\n&quot;;
+            code = NOT_FOUND;
+            goto END;
+        }
+    }
+    else if (_http_request._method == &quot;POST&quot;) {
+        _http_request._cgi = true;
+        path = WEB_ROOT + _http_request._uri;
+    }
+    else {}
+
+    // 处理请求
+    if (_http_request._cgi == true) {
+        code = ProcessCgi();     // 执行cgi请求，程序运行结果放到response_body中
+        if (code == OK)
+            LOG(INFO) &lt;&lt; &quot;cgi process executed success\n&quot;;
+        code = ProcessWebPage(); // 讲cgi结果构建网页返回
+    }
+    else {
+        code = ProcessWebPage(); // 返回静态网页
+        if (code == OK)
+            LOG(INFO) &lt;&lt; &quot;send &quot; + path + &quot; success\n&quot;;
+    }
+}
+</code></pre>
+<p>发送响应就是简单的将构建好的响应返回给对端即可。</p>
+<pre><code class="language-cpp">void EndPoint::SendHttpResponse()
+{
+    send(_sock, _http_response._status_line.c_str(), _http_response._status_line.size(), 0);
+    for (auto&amp; header : _http_response._response_headers) {
+        header += LINE_BREAK;
+        send(_sock, header.c_str(), header.size(), 0);
+    }
+    send(_sock, _http_response._blank.c_str(), _http_response._blank.size(), 0);
+    if (_http_request._cgi) {
+        auto&amp; body = _http_response.response_body;
+        int total = 0;
+        while (total &lt; body.size()) {
+            ssize_t s = send(_sock, body.c_str() + total, body.size() - total, 0);
+            if (s == 0) break;
+            total += s;
+        }
+    }
+    else {
+        sendfile(_sock, _http_response._resource_fd, 0, _http_request._resrc_stat.st_size);
+        close(_http_response._resource_fd);
+    }
+
+    LOG(INFO) &lt;&lt; &quot;send http response success\n&quot;;
+}
+</code></pre>
+<h4 id="处理静态和非静态请求">处理静态和非静态请求</h4>
+<p>构建普通网页响应。</p>
+<pre><code class="language-cpp">int ProcessNonCgi()
+{
+    _http_response._resource_fd = open(_http_request._path.c_str(), O_RDONLY); 
+    if (_http_response._resource_fd &lt; 0)
+        return NOT_FOUND;
+    
+    auto&amp; line = _http_response._status_line;
+    auto&amp; code = _http_response._status_code;
+    line = HTTP_VERSION + &quot; &quot; + std::to_string(code) + &quot; &quot; + Util::Code2Desc(code) + LINE_BREAK;
+    
+    auto&amp; stat = _http_request._resoucre_stat;
+    auto&amp; path = _http_request._path;
+    std::string content_type_header = &quot;Content-Type: &quot; + Util::Suffix2Type(GetSuffix(path));
+    std::string content_length_header = &quot;Content-Length: &quot; + std::to_string(stat.st_size);
+    std::string content_language_header = &quot;Content-Language: zh-cn&quot;;
+    
+    _http_response._response_headers.push_back(content_type_header);
+    _http_response._response_headers.push_back(content_length_header);
+    _http_response._response_headers.push_back(content_language_header);
+
+    return OK;
+}
+</code></pre>
+<p>构建CGI响应。这是本项目的重难点。</p>
+<p>线程首先首先创建子进程，将具体执行进程程序替换的任务交给子进程。</p>
+<p>其次定制父子进程通信协议。</p>
+<p>请求方法，GET方法的请求参数，报头中的正文大小几个变量都用环境变量导给子进程。POST方法的请求体使用管道导给子进程。</p>
+<p>中个细节代码中有注释说明。</p>
+<pre><code class="language-cpp">int ProcessCgi()
+{
+    auto&amp; method = _http_request._method;
+    auto&amp; body = _http_request._request_body;
+    auto&amp; path = _http_request._path;
+    auto&amp; code = _http_response._status_code;
+
+    // 构建两个管道，一个是父写子读，一个是父读子写，管道从父进程角度命名
+    // parent output[1]  --&gt;  output[0] child
+    // parent  input[0]  &lt;--  input[1]  child
+    int input[2];  // 父读子写
+    int output[2]; // 父写子读
+    if (pipe(input) &lt; 0 || pipe(output) &lt; 0)
+        return SVR_ERROR;
+
+    pid_t pid = fork();
+    if (pid == 0) /* child */ {
+        close(input[0]);
+        close(output[1]);
+
+        int ret = setenv(&quot;METHOD&quot;, method.c_str(), 1); // 先导请求方法
+        if (method == &quot;GET&quot;) // 再导GET请求参数
+            ret |= setenv(&quot;QUERY&quot;, _http_request._query.c_str(), 0); 
+        else if (method == &quot;POST&quot;) // 再导正文大小
+            ret |= setenv(&quot;CONTENT_LENGTH&quot;, std::to_string(body.size()).c_str(), 0); 
+
+        if (ret &lt; 0)
+            LOG(WARNING) &lt;&lt; &quot;set env failed, errno: &quot; &lt;&lt; errno &lt;&lt; '\n';
+
+        dup2(input[1], 1);
+        dup2(output[0], 0);
+
+        execl(_http_request._path.c_str(), _http_request._path.c_str(), nullptr);
+        code = SVR_ERROR;
+        exit(1);
+    }
+    else if (pid &gt; 0) /* parent */ {
+        close(input[1]);
+        close(output[0]);
+
+        if (_http_request._method == &quot;POST&quot;) {
+            auto&amp; body = _http_request._request_body;
+            int already = 0;
+            while (already &lt; body.size()) {
+                ssize_t s = write(output[1], body.c_str() + already, body.size() - already);
+                if (s == 0) break;
+                already += s;
+            }
+        }
+
+        int status = 0;
+        pid_t ret = waitpid(pid, &amp;status, 0);
+        if (ret &lt; 0)
+            LOG(ERROR) &lt;&lt; &quot;parent process wait failed\n&quot;;
+            code = SVR_ERROR;
+        }
+        close(input[0]);
+        close(output[1]);
+        return code;
+    }
+    else { /* pid &lt; 0 */ 
+        LOG(ERROR) &lt;&lt; &quot;failed to create child process\n&quot;;
+        return SVR_ERROR;
+    }
+
+    return code;
+}
+</code></pre>
+<h3 id="差错处理">差错处理</h3>
+<p>在读取请求构建响应发送响应的过程中，都穿插着错误判断，并以HTTP响应状态码作为返回值。</p>
+<p>在适当的地方<code>goto END;</code>，直接进行错误处理。错误处理利用得到的状态码构建错误响应，也就是返回错误网页，如404页面。</p>
+<pre><code class="language-cpp">void BuildHttpResponse()
+{
+    // 排除非法请求
+    if (_http_request._method != &quot;GET&quot; &amp;&amp; _http_request._method != &quot;POST&quot;)
+    {
+        LOG(WARNING) &lt;&lt; &quot;bad request invaild method\n&quot;;
+        code = BAD_REQUEST;
+        goto END;
+    }
+    
+	//...
+    
+    // 差错处理
+    END:
+    if (code != OK)
+    {
+        LOG(INFO) &lt;&lt; &quot;headler error begin, code: &quot; &lt;&lt; code &lt;&lt; '\n';
+        ErrorHelper(); // 构建错误响应
+    }
+}
+
+private:
+void ErrorHelper()
+{
+    _http_request._cgi = false; // 错误处理，返回静态网页
+    auto&amp; code = _http_response._status_code;
+
+    switch (code)
+    {
+        case BAD_REQUEST:
+            HeadlerWrong(PAGE_404);
+            break;
+        case NOT_FOUND:
+            HeadlerWrong(PAGE_404); // 单独构建404页面
+            break;
+        case SVR_ERROR:
+            HeadlerWrong(PAGE_404);
+            break;
+        case SVR_UNAVL:
+            HeadlerWrong(PAGE_404);
+            break;
+        default:
+            LOG(WARNING) &lt;&lt; &quot;unkown error code&quot; &lt;&lt; std::endl;
+            break;
+    }
+}
+
+void HeadlerWrong(const std::string&amp; wrong_page)
+{
+    _http_request._path = WEB_ROOT + '/' + wrong_page;
+    stat(_http_request._path.c_str(), &amp;_http_request._resoucre_stat);
+    ProcessWebPage(); // 返回404页面
+}
+
+int ProcessCgi()
+{
+ 	if (pid == 0) {
+        //...
+    }
+    else if (pid &gt; 0) { /* parent */
+        // 获取子进程退出结果
+        int status = 0;
+        pid_t ret = waitpid(pid, &amp;status, 0);
+        if (ret == pid)
+        {
+            // 管道读取子进程输出
+            char ch = 0;
+            while (read(input[0], &amp;ch, 1))
+                _http_response.response_body.push_back(ch); // 子进程输出放到响应体中
+
+            //判断进程是否正常终止
+            if (WIFEXITED(status)) {
+                LOG(INFO) &lt;&lt; &quot;subprocess exited exit code: &quot; &lt;&lt; WEXITSTATUS(status) &lt;&lt; '\n';
+                if (WEXITSTATUS(status) != 0)
+                    code = BAD_REQUEST;
+            } else {
+                LOG(INFO) &lt;&lt; &quot;subprocess exited by signal: &quot; &lt;&lt; WIFEXITED(status) &lt;&lt; '\n';
+                code = BAD_REQUEST;
+            }
+        }
+        else {
+            LOG(ERROR) &lt;&lt; &quot;parent process wait failed\n&quot;;
+            code = SVR_ERROR;
+        }
+        //...
+
+        return code;
+    }
+    else /* pid &lt; 0 */ {
+        LOG(ERROR) &lt;&lt; &quot;failed to create child process\n&quot;;
+        return SVR_ERROR;
+    }
+
+    return code;
+}
+</code></pre>
+<h3 id="引入线程池">引入线程池</h3>
+<p>任务队列中的任务类，设置回调方法，使任务体能够自行调用处理任务的函数。</p>
+<pre><code class="language-cpp">class Task
+{
+private:
+    int _sock;
+    CallBack HandlerTask; // 设置回调 当队列中有任务时，调用回调让后端处理任务
+
+public:
+    Task() {}
+    Task(int sock) : _sock(sock) {}
+    ~Task() {}
+
+    void ProcessTask() {
+        HandlerTask(_sock);
+    }
+};
+</code></pre>
+<p>将<code>HeaderRequest</code>方法，构建成回调<code>CallBack</code>仿函数。</p>
+<pre><code class="language-cpp">class CallBack
+{
+public:
+    CallBack() {}
+    ~CallBack() {}
+
+public:
+    void operator()(int sock) {
+        EndPoint* ep = new EndPoint(sock);
+        if (ep-&gt;RecvHttpRequest() &amp;&amp; ep-&gt;ParseHttpRequest()) {
+            ep-&gt;BuildHttpResponse();
+            ep-&gt;SendHttpResponse();
+        }
+        else 
+            LOG(WARNING) &lt;&lt; &quot;recv http request failed\n&quot;;
+
+        delete ep;
+    }
+};
+</code></pre>
+<p>设置线程池，并配备任务队列。</p>
+<p>交给外部<code>HTTPServer</code>类向任务队列中添加<code>accept</code>接受到的任务。</p>
+<p>自身设置<code>TASK_NUM</code>数量的线程来同步互斥地获取任务队列中的任务。</p>
+<pre><code class="language-cpp">class ThreadPool
+{
+private:
+    std::queue&lt;Task&gt; _task_queue;
+    int _task_num;
+    bool _stop;
+
+    pthread_mutex_t _mtx;
+    pthread_cond_t _cond;
+    static ThreadPool* _thread_pool;
+
+private:
+    ThreadPool() = default;
+    ThreadPool(int num = TASK_NUM) : _task_num(num), _stop(false) {
+        pthread_mutex_init(&amp;_mtx, nullptr);
+        pthread_cond_init(&amp;_cond, nullptr);
+    }
+    ThreadPool(const ThreadPool&amp;) = delete;
+
+public:
+    static ThreadPool* GetInstance() {
+        pthread_mutex_t lck = PTHREAD_MUTEX_INITIALIZER;
+        if (_thread_pool == nullptr) {
+            pthread_mutex_lock(&amp;lck);
+            if (_thread_pool == nullptr) {
+                _thread_pool = new ThreadPool(TASK_NUM);
+                _thread_pool-&gt;InitThreadPool();
+            }
+            pthread_mutex_unlock(&amp;lck);
+        }
+        return _thread_pool;
+    }
+
+    void InitThreadPool() {
+        for (int i = 0; i &lt; _task_num; ++i) {
+            pthread_t tid;
+            if (pthread_create(&amp;tid, nullptr, ThreadRoutine, (void*)_thread_pool) != 0) {
+                LOG(FATAL) &lt;&lt; &quot;create pthread failed\n&quot;;
+                exit(1);
+            }
+        }
+        LOG(INFO) &lt;&lt; &quot;thread pool init success\n&quot;;
+    }
+
+    bool isEmpty() {
+        return _task_queue.empty();
+    }
+    void Lock() {
+        pthread_mutex_lock(&amp;_mtx);
+    }
+    void Unlock() {
+        pthread_mutex_unlock(&amp;_mtx);
+    }
+    void ThreadWait() {
+        pthread_cond_wait(&amp;_cond, &amp;_mtx);
+    }
+    void ThreadWakeup() {
+        pthread_cond_signal(&amp;_cond);
+    }
+
+    static void* ThreadRoutine(void* args) {
+        ThreadPool* tp = (ThreadPool*)args;
+        while (!tp-&gt;_stop) {
+            tp-&gt;Lock();
+
+            while (tp-&gt;isEmpty())
+                tp-&gt;ThreadWait();
+
+            Task task;
+            tp-&gt;PopTask(&amp;task);
+
+            tp-&gt;Unlock();
+            task.ProcessTask();
+        }
+    }
+
+    void PushTask(const Task&amp; task) {
+        Lock();
+
+        _task_queue.push(task);
+
+        Unlock();
+        ThreadWakeup();
+    }
+
+    void PopTask(Task* task) {
+        *task = _task_queue.front();
+        _task_queue.pop();
+    }
+
+    ~ThreadPool() {
+        pthread_mutex_destroy(&amp;_mtx);
+        pthread_cond_destroy(&amp;_cond);
+    }
+};
+ThreadPool* ThreadPool::_thread_pool = nullptr;
+</code></pre>
+<pre><code class="language-cpp">class HttpServer
+{
+private:
+    int _port;
+    TcpServer* _tcp_svr;
+    ThreadPool* _thread_pool;
+    bool _stop;
+
+public:
+    HttpServer(int port = PORT) : _port(port), _tcp_svr(nullptr), _stop(false) {}
+    ~HttpServer() {}
+    
+    void InitServer() {
+        signal(SIGPIPE, SIG_IGN); // 忽略SIGPIPE信号
+        _tcp_svr = TcpServer::GetInstance(_port);
+        _thread_pool = ThreadPool::GetInstance();
+    }
+
+    void Loop() {
+        while (!_stop) {
+            struct sockaddr_in peer;
+            socklen_t len = sizeof(peer);
+            int sock = accept(_tcp_svr-&gt;GetListenSock(), (struct sockaddr*)&amp;peer, &amp;len);
+            if (sock &lt; 0) continue;
+
+            Task task(sock);
+            _thread_pool-&gt;PushTask(task);
+        }
+    }
+};
+</code></pre>
+<h3 id="调用逻辑">调用逻辑</h3>
+<img src="https://img.gejiba.com/images/f6f73baa5fd26e94615388c1a585f610.png" alt="httpserver调用逻辑" border="0" style="zoom:50%;" >
+<p> </p>
+<h2 id="3-难点总结和项目扩展">3. 难点总结和项目扩展</h2>
+<p>对于CGI机制的理解和实现。</p>
+<img src="https://img.gejiba.com/images/60227f51c300c20f1f1b5879101d5270.png" alt="HTTP服务流程" border="0">
+<p>整个HTTP服务就是CGI程序和客户端沟通的桥梁，因为CGI程序与外界的输入输出都由HTTP服务器代理和转发。</p>
+<p>通过子进程进程程序替换的方式，能够调用任意程序，且可以获得程序的运行结果和控制其输入输出。</p>
+<h3 id="项目扩展">项目扩展</h3>
+<ul>
+<li>URL encode decode</li>
+<li>数据库增删查改</li>
+<li>HTTP其他方法</li>
+<li>配置文件化</li>
+<li>301302转发</li>
+</ul>
+<h4 id="业务层面">业务层面</h4>
+<ul class="contains-task-list">
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-3596081"><label class="task-list-item-label" for="task-item-3596081"> 实现在线计算器（日期转换等）</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" checked="" disabled="" type="checkbox" id="task-item-1354789"><label class="task-list-item-label" for="task-item-1354789"> 实现在线简历</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-8957209"><label class="task-list-item-label" for="task-item-8957209"> 实现博客系统</label></li>
+</ul>
+<h4 id="技术层面">技术层面</h4>
+<ul class="contains-task-list">
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-1472570"><label class="task-list-item-label" for="task-item-1472570"> 支持HTTP1.1长连接（链接管理）</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-8456324"><label class="task-list-item-label" for="task-item-8456324"> 提高并发量和执行效率</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-9213280"><label class="task-list-item-label" for="task-item-9213280"> 支持redis</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-6075945"><label class="task-list-item-label" for="task-item-6075945"> 支持多机器业务转发负载均衡的代理功能</label></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#http%E6%9C%8D%E5%8A%A1%E5%99%A8">HTTP服务器</a>
+<ul>
+<li><a href="#1-%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF%E5%92%8C%E6%8A%80%E6%9C%AF%E7%89%B9%E7%82%B9">1. 项目背景和技术特点</a>
+<ul>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E7%9B%AE%E7%9A%84">实现目的</a></li>
+<li><a href="#%E6%8A%80%E6%9C%AF%E7%89%B9%E7%82%B9">技术特点</a></li>
+<li><a href="#%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83">开发环境</a></li>
+</ul>
+</li>
+<li><a href="#2-%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84%E5%92%8C%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF">2. 代码结构和实现思路</a>
+<ul>
+<li><a href="#tcpserver">TcpServer</a></li>
+<li><a href="#httpserver">HttpServer</a></li>
+<li><a href="#protocol">Protocol</a>
+<ul>
+<li><a href="#%E8%AF%BB%E5%8F%96%E5%92%8C%E8%A7%A3%E6%9E%90%E8%AF%B7%E6%B1%82">读取和解析请求</a></li>
+<li><a href="#%E6%9E%84%E5%BB%BA%E5%92%8C%E8%BF%94%E5%9B%9E%E5%93%8D%E5%BA%94">构建和返回响应</a></li>
+<li><a href="#%E5%A4%84%E7%90%86%E9%9D%99%E6%80%81%E5%92%8C%E9%9D%9E%E9%9D%99%E6%80%81%E8%AF%B7%E6%B1%82">处理静态和非静态请求</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B7%AE%E9%94%99%E5%A4%84%E7%90%86">差错处理</a></li>
+<li><a href="#%E5%BC%95%E5%85%A5%E7%BA%BF%E7%A8%8B%E6%B1%A0">引入线程池</a></li>
+<li><a href="#%E8%B0%83%E7%94%A8%E9%80%BB%E8%BE%91">调用逻辑</a></li>
+</ul>
+</li>
+<li><a href="#3-%E9%9A%BE%E7%82%B9%E6%80%BB%E7%BB%93%E5%92%8C%E9%A1%B9%E7%9B%AE%E6%89%A9%E5%B1%95">3. 难点总结和项目扩展</a>
+<ul>
+<li><a href="#%E9%A1%B9%E7%9B%AE%E6%89%A9%E5%B1%95">项目扩展</a>
+<ul>
+<li><a href="#%E4%B8%9A%E5%8A%A1%E5%B1%82%E9%9D%A2">业务层面</a></li>
+<li><a href="#%E6%8A%80%E6%9C%AF%E5%B1%82%E9%9D%A2">技术层面</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://yourfriendyo.github.io/post/boostsearch-sou-suo-yin-qing/">
+              <h3 class="post-title">
+                BoostSearch搜索引擎
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://yourfriendyo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1931 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>负载均衡式在线OJ | AKA你的闺蜜的博客</title>
+<link rel="shortcut icon" href="https://yourfriendyo.github.io/favicon.ico?v=1676169831140">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://yourfriendyo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="负载均衡式在线OJ | AKA你的闺蜜的博客 - Atom Feed" href="https://yourfriendyo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="负载均衡式OJ
+1. 项目技术和开发环境
+项目技术
+
+C++ STL 标准库
+Boost 库
+cpp-httplib 第三方开源网络库
+ctemplate 第三方开源前端网页渲染库
+jsoncpp 第三方开源序列化、反序列化库
+负载均衡设计..." />
+    <meta name="keywords" content="Project" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://yourfriendyo.github.io">
+  <img class="avatar" src="https://yourfriendyo.github.io/images/avatar.png?v=1676169831140" alt="">
+  </a>
+  <h1 class="site-title">
+    AKA你的闺蜜的博客
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/cv.html" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              负载均衡式在线OJ
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-15
+              </span>
+              <span>
+                41 min read
+              </span>
+              
+                <a href="https://yourfriendyo.github.io/tag/li__VqR4N/" class="post-tag">
+                  # Project
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://img.gejiba.com/images/e7cae9c024d3a18ec9a3f42bad44df1b.png" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="负载均衡式oj">负载均衡式OJ</h1>
+<h2 id="1-项目技术和开发环境">1. 项目技术和开发环境</h2>
+<h3 id="项目技术">项目技术</h3>
+<ul>
+<li>C++ STL 标准库</li>
+<li>Boost 库</li>
+<li>cpp-httplib 第三方开源网络库</li>
+<li>ctemplate 第三方开源前端网页渲染库</li>
+<li>jsoncpp 第三方开源序列化、反序列化库</li>
+<li>负载均衡设计</li>
+<li>多进程、多线程</li>
+<li>MySQL C Connect</li>
+<li>html /css/js/jquery/ajax</li>
+</ul>
+<h3 id="开发环境">开发环境</h3>
+<ul>
+<li>centos 7 服务器</li>
+<li>vim / gcc(g++) / makefile</li>
+</ul>
+<p> </p>
+<h2 id="2-结构设计和实现思路">2. 结构设计和实现思路</h2>
+<img src="https://img.gejiba.com/images/e7cae9c024d3a18ec9a3f42bad44df1b.png" style="zoom:50%;" >
+<p>我们的项目核心是如下三个模块：</p>
+<table>
+<thead>
+<tr>
+<th>目录</th>
+<th>介绍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>comm</code></td>
+<td>公共模块，存放公用的代码如一些工具类</td>
+</tr>
+<tr>
+<td><code>compile_server</code></td>
+<td>编译模块，编译运行远端提交的代码</td>
+</tr>
+<tr>
+<td><code>oj_server</code></td>
+<td>服务模块，提供题目列表、题目查看、题目编写，实现反向代理负载均衡的功能</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>在线判题方面我们只实现类似牛客、力扣等网站的题目列表和在线编程的功能。</p>
+</blockquote>
+<p>项目目录结构大致如下：</p>
+<pre><code class="language-shell">OnlineJudge/
+├── comm/
+│   ├── httplib.h -&gt; ../depts/cpp-httplib/httplib.h
+│   ├── log.hpp
+│   └── util.hpp
+├── compile_server/
+│   ├── compile_server.cc
+│   ├── compile_run.hpp
+│   ├── compiler.hpp
+│   ├── runner.hpp
+│   ├── Makefile
+│   └── temp/
+├── oj_server/
+│   ├── oj_server.cc
+│   ├── oj_model.hpp
+│   ├── oj_controller.hpp
+│   ├── oj_view.hpp
+│   └── Makefile
+└── Makefile
+</code></pre>
+<p> </p>
+<h3 id="21-日志模块">2.1 日志模块</h3>
+<pre><code class="language-cpp">#pragma once
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &quot;util.hpp&quot;
+
+namespace NS_Log
+{
+    using namespace NS_Util;
+
+    // log level
+    enum
+    {
+        INFO,
+        DEBUG,
+        WARNING,
+        ERROR,
+        FATAL
+    };
+
+    // LOG() &lt;&lt; &quot;xxxxxx&quot;;
+	std::ostream&amp; Log(const std::string&amp; level, const std::string&amp; file_name, int line)
+    {
+        std::string message = &quot;[&quot; + level + &quot;]&quot;;         // 添加日志等级
+
+        message += &quot;[&quot; + file_name + &quot;]&quot;;                // 获取报错文件
+        message += &quot;[&quot; + std::to_string(line) + &quot;]&quot;;     // 获取报错行号
+        message += &quot;[&quot; + TimeUtil::GetTimeStamp() + &quot;]&quot;; // 获取日志时间
+
+        std::cout &lt;&lt; message; // 存入缓冲区，不刷新待填充报错信息
+        return std::cout;
+    }
+
+#define LOG(level) Log(#level, __FILE__, __LINE__)
+}
+</code></pre>
+<p> </p>
+<h3 id="22-编译运行模块">2.2 编译运行模块</h3>
+<h4 id="编译模块">编译模块</h4>
+<img src="https://img.gejiba.com/images/6d7b7ff8f8caee6ca1777baeabd8e7d2.png" style="zoom:50%;" >
+<pre><code class="language-cpp">// ret: 编译是否成功
+// file_name: 编译文件名
+// ./temp/123.cpp
+// ./temp/123.exe
+// ./temp/123.err
+static bool Compile(const std::string&amp; file_name)
+{
+    pid_t pid = fork();
+
+    if (pid == 0) /* child */
+    {
+        int fd = open(PathUtil::Err(file_name).c_str(), O_CREAT | O_WRONLY, 644);
+        if (fd &lt; 0)
+        {
+            LOG(WARNING) &lt;&lt; &quot;cannot open err file, maybe not existed\n&quot;;
+            exit(1);
+        }
+
+        dup2(err_fd, 2); // 将报错信息重定向至.stderr文件中
+
+        //g++ -o 123.exe 123.cpp -std=c++11
+        execlp(
+            &quot;g++&quot;,
+            &quot;-o&quot;,
+            PathUtil::Exe(file_name).c_str(),
+            PathUtil::Src(file_name).c_str(),
+            &quot;-std=c++11&quot;,
+            nullptr
+        );
+
+        LOG(ERROR) &lt;&lt; &quot;compile(g++) file failed, exec's arguments were wrong\n&quot;;
+        exit(2);
+
+    }
+    else if (pid &gt; 0) /* parent */
+    {
+        waitpid(pid, nullptr, 0);
+
+        if (FileUtil::IsFileExists(PathUtil::Exe(file_name))) // 编译成功
+        {
+            LOG(INFO) &lt;&lt; &quot;compile(g++) success, get &quot; &lt;&lt; PathUtil::Exe(file_name);
+            return true;
+        }
+    }
+    else /* pid &lt; 0 error */
+    {
+        LOG(ERROR) &lt;&lt; &quot;child proccess create failed\n&quot;;
+        return false;
+    }
+}
+</code></pre>
+<h4 id="运行模块">运行模块</h4>
+<p>运行功能由<code>runner.hpp</code>提供。</p>
+<p>运行模块不需要考虑代码运行的结果是否正确，只关心程序是否正常退出。程序的退出信息交给上层模块处理。</p>
+<p>其次我们要控制程序的输入输出，</p>
+<ul>
+<li>标准输入：不作处理</li>
+<li>标准输出：一般是程序运行的结果</li>
+<li>标准错误：运行时错误信息</li>
+</ul>
+<pre><code class="language-cpp">static int Run(const std::string&amp; file_name)
+{
+    std::string exe_file = PathUtil::Exe(file_name);
+    int sin_fd = FileUtil::OpenFile(PathUtil::Stdin(file_name));
+    int sout_fd = FileUtil::OpenFile(PathUtil::Stdout(file_name));
+    int serr_fd = FileUtil::OpenFile(PathUtil::Stderr(file_name));
+
+    if (sin_fd == 0 || sin_fd == 0 || serr_fd == 0)
+        exit(3);
+
+    pid_t pid = fork();
+    if (pid == 0) /* child */
+    {
+        //重定向标准输出输入错误
+        dup2(sin_fd, 0);
+        dup2(sout_fd, 1);
+        dup2(serr_fd, 2);
+        SetProcLimit(cpu_limit, mem_limit); // 资源约束
+
+        // ./tmp/code.out
+        execl(exe_file.c_str(), exe_file.c_str());
+
+        exit(-2);
+    }
+    else if (pid &gt; 0) /* parent */
+    {
+        int status = 0;
+        waitpid(pid, &amp;status, 0);
+        return status &amp; 0x7F; // 返回程序的退出信息，具体情况交给oj模块处理
+    }
+    else /* error */
+    {
+        close(sin_fd);
+        close(sout_fd);
+        close(serr_fd);
+    }
+}
+</code></pre>
+<h5 id="限制时空复杂度">限制时空复杂度</h5>
+<p>通过<code>setrlimit()</code>限制程序的资源的占用大小。如CPU时间，占用空间大小等。分别通过发出<code>24)SIGCPU</code>和<code>6)SIGABRT</code>信号终止程序。</p>
+<p>故我们可以在运行子进程之前设置资源约束，在子进程运行结束后也可以通过父进程等待的返回值，确定子进程是否是异常退出以及是否收到第几位信号。</p>
+<pre><code class="language-cpp">// 设置子进程运行占用资源的大小
+static void SetProcLimit(int cpu_limit, int mem_limit)
+{
+    struct rlimit cpu_rl;
+    cpu_rl.rlim_max = RLIM_INFINITY;
+    cpu_rl.rlim_cur = cpu_limit;
+    setrlimit(RLIMIT_CPU, &amp;cpu_rl);
+
+    struct rlimit mem_rl;
+    mem_rl.rlim_max = RLIM_INFINITY;
+    mem_rl.rlim_cur = mem_limit * 1024; // 转化成KB
+    setrlimit(RLIMIT_AS, &amp;mem_rl);
+}
+</code></pre>
+<h4 id="编译运行模块">编译运行模块</h4>
+<img src="https://img.gejiba.com/images/9b8e05359f869ada83a088f297fb4b95.png" style="zoom:50%;"  >
+<p><code>compile_run.hpp</code>实现编译和运行功能。</p>
+<p>要能够适配用户需求，定制通信协议字段，正确调用编译和运行模块。</p>
+<pre><code class="language-cpp">/***************************************************************
+ * 输入json串：
+ *   code    : 用户提交代码
+ *   input   : 用户提交代码的标准输入内容，不作处理以待扩展
+ *   cpu_lim : 时间复杂度
+ *   mem_lim : 空间复杂度
+ * {&quot;code&quot;: &quot;#include...&quot;, &quot;input&quot;: &quot;&quot;, &quot;cpu_lim&quot;: &quot;1&quot;, &quot;mem_lim&quot;: &quot;10240&quot;}
+ *
+ * 输出json串：
+ *   必填：
+ *   status  : 状态码
+ *   reason  : 结果原因
+ *   选填：
+ *   stdout  : 用户提交代码的运行正确结果
+ *   stderr  : 用户提交代码的运行错误结果
+ * {&quot;status&quot;: &quot;0&quot;, &quot;reason&quot;: &quot;&quot;, &quot;stdout&quot;: &quot;&quot;, &quot;stdin&quot;: &quot;&quot;}
+***************************************************************/
+static void Start(const std::string&amp; in_json, std::string* out_json)
+{
+    // 反序列化
+    Json::Value in_value;
+    Json::Reader reader;
+    reader.parse(in_json, in_value); // 解析in_json
+
+    std::string code = in_value[&quot;code&quot;].asString();
+    std::string input = in_value[&quot;input&quot;].asString();
+    int cpu_limit = in_value[&quot;cpu_lim&quot;].asInt();
+    int mem_limit = in_value[&quot;mem_lim&quot;].asInt();
+
+    int status_code = 0;
+    int ret_code = 0;
+    std::string file_name;
+
+    if (code.size() == 0)
+    {
+        status_code = -1; // 代码为空
+        goto ERROR;
+    }
+    // 生成源文件并写入
+    file_name = FileUtil::UniqueFileName();
+    if (!FileUtil::WriteFile(PathUtil::Src(file_name), code))
+    {
+        status_code = -2; // 文件写入错误
+        goto ERROR;
+    }
+    // 编译源文件
+    if (!Compiler::Compile(file_name))
+    {
+        status_code = -3; // 代码编译错误
+        goto ERROR;
+    }
+    // 运行可执行文件
+    ret_code = Runner::Run(file_name, cpu_limit, mem_limit);
+    if (ret_code &lt; 0) // 内部错误
+    {
+        status_code = -2;
+        goto ERROR;
+    }
+    else // ret_code &gt;= 0 程序异常或正常退出
+    {
+        status_code = ret_code;
+        goto ERROR;
+    }
+    ERROR:
+    Json::Value out_value;
+    out_value[&quot;status&quot;] = status_code;
+    out_value[&quot;reason&quot;] = StatusUtil::CodeToDesc(status_code, file_name);
+    if (status_code == 0)
+    {
+        out_value[&quot;stdout&quot;] = FileUtil::ReadFile(PathUtil::Stdout(file_name));
+        out_value[&quot;stderr&quot;] = FileUtil::ReadFile(PathUtil::Stderr(file_name));
+    }
+    //序列化
+    Json::StyledWriter writer;
+    *out_json = writer.write(out_value);
+    
+    FileUtil::DeleteTempFile(file_name); // 清理临时文件
+}
+</code></pre>
+<h4 id="服务模块">服务模块</h4>
+<p>编译服务随时可能被多人请求，必须保证上传调源文件名唯一。下面代码仅用来测试功能是否正确。</p>
+<pre><code class="language-cpp">//客户端通过HTTP协议向编译服务上传一个json串，编译模块发送回一个json串
+int main()
+{
+    std::string in_json;
+    std::string out_json;
+
+    Json::Value in_value;
+    in_value[&quot;code&quot;] = R&quot;(#include &lt;iostream&gt;
+int main()
+{
+    std::cout &lt;&lt; &quot;hello world&quot; &lt;&lt; std::endl;
+    // int* p = new int[1024*1024*1024];
+    // while (1);
+    // int a = 1 / 0;
+    // aaa
+    return 0;
+})&quot;;
+    in_value[&quot;input&quot;] = &quot;&quot;;
+    in_value[&quot;cpu_lim&quot;] = 1;
+    in_value[&quot;mem_lim&quot;] = 1024 * 30;
+
+    Json::StyledWriter writer;
+    in_json = writer.write(in_value);
+    std::cout &lt;&lt; in_json &lt;&lt; std::endl;
+
+    CompileAndRun::Start(in_json, &amp;out_json);
+
+    std::cout &lt;&lt; out_json &lt;&lt; std::endl;
+
+    return 0;
+}
+</code></pre>
+<p>我们使用<code>cpp-httplib</code>来将编译服务模块打包成网络服务，<code>cpp-httplib</code>要求<code>gcc/g++</code>版本必须高于<code>7</code>。我们使用<code>scl</code>工具集安装：</p>
+<pre><code class="language-shell">$ sudo yum install centos-release-scl scl-utils-build       # 安装scl yum源
+$ sudo yum install -y devtoolset-9-gcc devtoolset-9-gcc-c++ # 安装scl gcc版本工具集
+$ ls /opt/rh/                                               # 查看安装工具集
+$ scl enable devtoolset-9 bash                              # 启动工具集
+$ gcc -v         
+</code></pre>
+<pre><code class="language-cpp">int main()
+{
+    Server svr;
+
+    // 用来基本测试
+    svr.Get(&quot;/hello&quot;, [](const Request&amp; req, Response&amp; rsp) {
+            rsp.set_content(&quot;hello httplib, 你好网络库&quot;, &quot;text/pain; charset=utf-8&quot;);
+        }
+    );
+
+    // 提供编译运行服务
+    svr.Post(&quot;/compile_and_run&quot;, [](const Request&amp; req, Response&amp; rsp)
+        {
+            std::string in_json = req.body;
+            std::string out_json;
+            if (!in_json.empty())
+            {
+                CompileAndRun::Start(in_json, &amp;out_json);
+                rsp.set_content(out_json, &quot;application/json; charset=utf-8&quot;);
+            }
+        }
+    );
+
+    svr.listen(&quot;0.0.0.0&quot;, 8080); // 启动http服务
+    return 0;
+}
+</code></pre>
+<p>如上代码就是我们的网络编译服务，我们采用 Posman 进行测试。</p>
+<img src="https://img.gejiba.com/images/efd2a8002767a76db63ae126162d6601.png" style="zoom:50%;" >
+<p>至此，我们的编译运行服务模块就完成了。</p>
+<blockquote>
+<p>为什么将编译运行模块独立成一个服务呢？</p>
+</blockquote>
+<p>编译运行服务比较耗时耗资源，危险系数比较高，独立出来便于进行分布部署在多台主机。</p>
+<p> </p>
+<h3 id="23-oj服务模块">2.3 OJ服务模块</h3>
+<p>OJ服务本质就是建立一个小型的在线判题网站。我们只提供最基本的网站功能：</p>
+<ol>
+<li>首页获取：使用题库列表页面充当首页；</li>
+<li>代码编辑：</li>
+<li>代码提交：对应编译和运行模块。</li>
+</ol>
+<p>我们采用MVC结构来设计OJ服务模块，何为MVC呢？</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>M</code></td>
+<td><code>Model</code>，进行数据交互的模块，比如对题库进行增删改查。</td>
+</tr>
+<tr>
+<td><code>V</code></td>
+<td><code>View</code>，拿到数据后，进行构建和渲染网页。</td>
+</tr>
+<tr>
+<td><code>C</code></td>
+<td><code>Control</code>，控制数据交互等，就是我们的核心业务逻辑。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="服务路由模块">服务路由模块</h4>
+<p>用户请求的服务不同，我们就要进行不同的工作，所以我们首先要实现服务路由的功能。</p>
+<pre><code class="language-cpp">// 服务路由功能
+Server svr;
+
+/* 获取题库列表 */
+svr.Get(&quot;/problem_set&quot;, [](const Request&amp; req, Response&amp; rsp) {
+    rsp.set_content(&quot;这是所有题目的列表&quot;, &quot;text/plain; charset=utf8&quot;);
+});
+/* 根据题号获取题目内容 */
+// /problems/10 正则表达式匹配
+svr.Get(R&quot;(/problems/(\d+))&quot;, [](const Request&amp; req, Response&amp; rsp) {
+    std::string problem_number = req.matches[1];
+    rsp.set_content(&quot;这是指定的一道题，题号：&quot; + problem_number, &quot;text/plain; charset=utf8&quot;);
+});
+/* 提交代码，使用编译运行服务 */
+svr.Get(R&quot;(/judge/(\d+))&quot;, [](const Request&amp; req, Response&amp; rsp) {
+    std::string problem_number = req.matches[1];
+    rsp.set_content(&quot;这是该题的判题，题号：&quot; + problem_number, &quot;text/plain; charset=utf8&quot;);
+});
+
+svr.set_base_dir(&quot;./wwwroot&quot;);
+svr.listen(&quot;0.0.0.0&quot;, 8080);
+</code></pre>
+<h4 id="题目题库设计">题目题库设计</h4>
+<p>题目具有如下属性：题目的编号，题目的标题，题目的难度，题目的题干，题目的时间空间要求，测试用例等等。</p>
+<p>我们建立两张表，一张是题库列表，第二张表存放题目的描述、题目的预设置代码<code>header.cpp</code>和测试用例代码<code>tail.cpp</code>等等。</p>
+<pre><code class="language-cpp">// header.cpp
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+class Solution {
+public:
+    vector&lt;int&gt; twoSum(vector&lt;int&gt;&amp; nums, int target) {
+        // coding here...
+
+    }
+};
+</code></pre>
+<pre><code class="language-cpp">// tail.cpp
+#ifndef COMPILER_ONLINE
+#include &quot;header.cpp&quot;
+#endif
+
+void Test1()
+{
+    vector&lt;int&gt; nums = { 2,7,11,15 };
+    vector&lt;int&gt; ret = Solution().twoSum(nums, 9);
+    if (find(ret.begin(), ret.end(), 0) != ret.end() &amp;&amp;
+        find(ret.begin(), ret.end(), 1) != ret.end())
+    {
+        std::cout &lt;&lt; &quot;通过测试用例1&quot; &lt;&lt; std::endl;
+    }
+    else
+    {
+        std::cout &lt;&lt; &quot;测试用例1失败&quot; &lt;&lt; std::endl;
+    }
+}
+
+void Test2()
+{
+    vector&lt;int&gt; nums = { 3,2,4 };
+    vector&lt;int&gt; ret = Solution().twoSum(nums, 6);
+    if (find(ret.begin(), ret.end(), 2) != ret.end() &amp;&amp;
+        find(ret.begin(), ret.end(), 4) != ret.end())
+    {
+        std::cout &lt;&lt; &quot;通过测试用例2&quot; &lt;&lt; std::endl;
+    }
+    else
+    {
+        std::cout &lt;&lt; &quot;测试用例2失败&quot; &lt;&lt; std::endl;
+    }
+}
+
+void Test3()
+{
+    vector&lt;int&gt; nums = { 3,3 };
+    vector&lt;int&gt; ret = Solution().twoSum(nums, 6);
+    if (find(ret.begin(), ret.end(), 0) != ret.end() &amp;&amp;
+        find(ret.begin(), ret.end(), 1) != ret.end())
+    {
+        std::cout &lt;&lt; &quot;通过测试用例1&quot; &lt;&lt; std::endl;
+    }
+    else
+    {
+        std::cout &lt;&lt; &quot;测试用例1失败&quot; &lt;&lt; std::endl;
+    }
+}
+
+int main()
+{
+    Test1();
+    Test2();
+    Test3();
+
+    return 0;
+}
+</code></pre>
+<p>合并<code>header.cpp</code>和<code>tail.cpp</code>，就是提交到后台编译运行服务的最终代码。</p>
+<h4 id="model模块">Model模块</h4>
+<p><code>Model</code>模块负责数据处理功能，大致框架如下：</p>
+<pre><code class="language-cpp">struct Problem
+{
+    std::string _number;     // 题目编号
+    std::string _title;      // 题目标题
+    std::string _desc;       // 题目描述
+    std::string _difficulty; // 题目难度 简单 中等 困难
+
+    int _cpu_limit;          // 题目的时间要求
+    int _mem_limit;          // 题目的空间要求
+
+    std::string _header;     // 题目的预设代码
+    std::string _tail;       // 题目的测试用例
+};
+const std::string problem_list = &quot;./problem_set/problems.list&quot;;
+
+class Model
+{
+    public:
+    Model();
+
+    // 加载题库列表文件和所有题目文件
+    bool LoadProblemList(const std::string&amp; question_list);
+    void GetAllProblems(std::vector&lt;Problem&gt;* out);
+    void GetOneProblems(const std::string&amp; problem_number, Problem* problem);
+    
+    ~Model();
+
+    private:
+    std::unordered_map&lt;std::string, Problem&gt; _problem_set; // 题号和题目内容的映射
+};
+</code></pre>
+<h4 id="control模块">Control模块</h4>
+<p><code>Control</code>模块为控制器，用来调用控制<code>Model</code>和<code>View</code>模块的。</p>
+<pre><code class="language-cpp">class Controller
+{
+    private:
+    Model _model;
+    View _view;
+
+    public:
+    Controller();
+    // 构建题库网页
+    bool GetAllQuestionsHtml(std::string* html);
+    // 构建题目编辑网页
+    bool GetOneQuestionHtml(const std::string&amp; number, std::string* html);
+    ~Controller();
+};
+</code></pre>
+<p>而它本身又是被<code>oj_server</code>所调用。用来调用我们对应的一些功能。</p>
+<pre><code class="language-cpp">Server svr;
+Controller ctrl;
+
+/* 获取题库列表 */
+svr.Get(&quot;/all_questions&quot;, [&amp;ctrl](const Request&amp; req, Response&amp; rsp) {
+    std::string html;
+    ctrl.GetAllQuestionsHtml(&amp;html);
+    rsp.set_content(html, &quot;text/html; charset=utf-8&quot;);
+});
+
+/* 根据题号获取题目内容 */
+// /questions/10 正则表达式匹配
+svr.Get(R&quot;(/question/(\d+))&quot;, [&amp;ctrl](const Request&amp; req, Response&amp; rsp) {
+    std::string question_number = req.matches[1];
+    std::string html;
+    ctrl.GetOneQuestionHtml(question_number, &amp;html);
+    rsp.set_content(html, &quot;text/html; charset=utf-8&quot;);
+});
+
+/* 提交代码，使用编译运行服务 */
+svr.Get(R&quot;(/judge/(\d+))&quot;, [&amp;ctrl](const Request&amp; req, Response&amp; rsp){
+    //...
+});
+</code></pre>
+<p><a href="#judge">跳转到<code>judge</code>编译运行服务功能实现处</a></p>
+<blockquote>
+<p>judge编译运行服务功能需要先实现View模块，不影响实现思路，我们将该模块的实现放到下面。</p>
+</blockquote>
+<h4 id="view模块">View模块</h4>
+<p><code>View</code>模块就是用来构建一些网页的，<code>Control</code>模块中构建网页的方法就是调用这里的。</p>
+<p>渲染网页我们选择用谷歌的<code>ctemplate</code>开源库。<code>ctamplate</code>需要我们提供<code>json</code>串和<code>html</code>网页骨架。</p>
+<ul>
+<li><code>json</code>串就是保存数据的数据字典，也就是一个一个的<code>kv</code>结构。</li>
+<li>原始网页内容包含<code>json</code>串中的<code>key</code>值，ctemplate所作的渲染就是将<code>key</code>值对应的<code>value</code>导入到网页中。</li>
+</ul>
+<img src="https://img.gejiba.com/images/cc5dc77678456769eb40041cf8c10949.png" style="zoom:50%;"  >
+<pre><code class="language-cpp">class View
+{
+    public:
+    View()
+    {}
+    ~View()
+    {}
+    // 题库列表只需显示题目编号、题目标题、题目难度
+    void ExpandAllQuestionsHtml(const std::vector&lt;Question&gt; questions, std::string* html)
+    {
+        std::string src_html = template_path + &quot;all_questions.html&quot;; // 路径
+        // 形成数据字典
+        TemplateDictionary root(&quot;all_questions&quot;);
+        for (const auto&amp; q : questions)
+        {
+            TemplateDictionary* sub =root.AddSectionDictionary(&quot;questions_list&quot;);
+            sub-&gt;SetValue(&quot;number&quot;, q._number);
+            sub-&gt;SetValue(&quot;title&quot;, q._title);
+            sub-&gt;SetValue(&quot;difficulty&quot;, q._difficulty);
+        }
+
+        // 获取被渲染的网页
+        Template* tpl = Template::GetTemplate(src_html, DO_NOT_STRIP);
+
+        tpl-&gt;Expand(html, &amp;root); // 开始渲染
+    }
+
+    void ExpandOneQuestionHtml(Question question, std::string* html)
+    {
+        // 路径
+        std::string src_html = template_path + &quot;one_question.html&quot;;
+        // 形成数据字典
+        TemplateDictionary root(&quot;one_question&quot;);
+        root.SetValue(&quot;number&quot;, question._number);
+        root.SetValue(&quot;title&quot;, question._title);
+        root.SetValue(&quot;difficulty&quot;, question._difficulty);
+        root.SetValue(&quot;desc&quot;, question._desc);
+        root.SetValue(&quot;header_code&quot;, question._header);
+
+        // 获取被渲染的网页
+        Template* tpl = Template::GetTemplate(src_html, DO_NOT_STRIP);
+        //
+        tpl-&gt;Expand(html, &amp;root);
+    }
+};
+</code></pre>
+<p>待渲染的网页如下所示：</p>
+<pre><code class="language-html">&lt;!-- all_question --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Online Judge - question list&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;th&gt;编号&lt;/th&gt;
+            &lt;th&gt;标题&lt;/th&gt;
+            &lt;th&gt;难度&lt;/th&gt;
+        &lt;/tr&gt;
+        {{#questions_list}}
+        &lt;tr&gt;
+            &lt;td&gt;{{number}}&lt;/td&gt;
+            &lt;!-- 题目跳转链接 --&gt;
+            &lt;td&gt;&lt;a href=&quot;/question/{{number}}&quot;&gt;{{title}}&lt;/a&gt;&lt;/td&gt;
+            &lt;td&gt;{{difficulty}}&lt;/td&gt;
+
+        &lt;/tr&gt;
+        {{/questions_list}}
+    &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<pre><code class="language-html">&lt;!-- one_question --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;{{number}}.{{title}}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h4&gt;{{number}}.{{title}}.{{difficulty}}&lt;/h4&gt;
+    &lt;p&gt;{{desc}}&lt;/p&gt;
+    &lt;!-- 代码编辑区 --&gt;
+    &lt;textarea name=&quot;&quot; id=&quot;&quot; cols=&quot;30&quot; rows=&quot;10&quot;&gt;{{header_code}}&lt;/textarea&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>放到指定目录下，由<code>View</code>模块调用，最后后由<code>oj_server</code>中的<code>Control</code>模块调用。</p>
+<p> </p>
+<h4 id="负载均衡功能">负载均衡功能</h4>
+<p>负载均衡首先我们要有关于服务主机的配置类，负载均衡功能类。此外，我们可以在目录下新建<code>server.conf</code>作为服务主机的配置文件。</p>
+<pre><code class="language-cpp">// 编译服务主机
+struct Server
+{
+    std::string _ip;
+    int _port;
+    std::atomic&lt;uint64_t&gt; _load_factor; // 服务主机的负载情况
+
+    Server() : _ip(&quot;&quot;), _port(-1), _load_factor(0)
+    {}
+    ~Server()
+    {}
+
+    void IncFactor() {
+        _load_factor++;
+    }
+
+    void DecFactor() {
+        _load_factor--;
+    }
+
+    uint64_t GetFactor() {
+        return _load_factor;
+    }
+};
+
+// 负载均衡模块
+class LoadBalance
+{
+    public:
+    LoadBalance() 
+    {
+        assert(LoadConf());
+        LOG(INFO) &lt;&lt; &quot;load severs conf success\n&quot;;
+    }
+    ~LoadBalance()
+    {}
+
+    public:
+    bool LoadConf();
+
+    // 智能选择服务主机
+    bool SmartSelection(int* id, Server** server)
+    {
+        std::lock_guard&lt;std::mutex&gt; lck(_mtx); // 维护负载选择的线程安全
+
+        // 轮询检测
+        int online_num = _online_svrs.size(); // 获取在线主机的个数
+        if (online_num == 0)
+        {
+            LOG(FATAL) &lt;&lt; &quot;all server machines are offlined now, please check them\n&quot;;
+            return false;
+        }
+
+        // 挑选负载最小的服务主机
+        uint64_t min_load = _servers[_online_svrs[0]].GetFactor();
+        *id = _online_svrs[0];
+        *server = &amp;_servers[_online_svrs[0]];
+
+        for (int i = 0; i &lt; online_num; i++)
+        {
+            uint64_t cur_load = _servers[_online_svrs[i]].GetFactor();
+            if (min_load &gt; cur_load)
+            {
+                min_load = cur_load;
+                *id = _online_svrs[i]; // 获取该主机id
+                *server = &amp;_servers[_online_svrs[i]]; //获取该主机类地址
+            }
+        }
+        return true;
+    }
+    
+    //...
+};
+</code></pre>
+<h4 id="a-idjudgejudge功能实现a"><a id="judge">Judge功能实现</a></h4>
+<p>Control 模块 Judge 功能实现的是向用户提供包装后的编译运行功能。</p>
+<ol>
+<li>根据题号获取该题目的信息；</li>
+<li>反序列化in_json，获取用户代码汇总用户代码和测试用例，形成compile_string；</li>
+<li>负载均衡选择好后台编译服务主机，并作客户端对该主机发起http请求；</li>
+<li>获取编译服务返回的json串，在返回给上层。</li>
+</ol>
+<pre><code class="language-cpp">// in_json
+//   &quot;code&quot;: &quot;#incude...&quot;,
+//   &quot;input&quot;: &quot;...&quot;,
+void Judge(const std::string&amp; number, const std::string&amp; in_json, std::string* out_json)
+{
+
+    Question question;
+    _model.GetOneQuestion(number, &amp;question); // 根据编号获取题目细节
+
+    // 反序列化in_json，获取用户代码
+    Json::Value in_value;
+    Json::Reader reader;
+    reader.parse(in_json, in_value);
+
+    // 汇总用户代码和测试用例，形成compile_string
+    Json::Value out_value;
+    out_value[&quot;input&quot;] = in_value[&quot;input&quot;].asString();
+    out_value[&quot;code&quot;] = in_value[&quot;code&quot;].asString() + question._tail;
+    out_value[&quot;cpu_lim&quot;] = question._cpu_limit;
+    out_value[&quot;mem_lim&quot;] = question._mem_limit;
+    Json::StyledWriter writer;
+    std::string compile_string = writer.write(out_value);
+
+    // 负载均衡选择主机
+    while (true) // 一直选择到可用主机，否则就是全部挂掉
+    {
+        int id = 0;
+        Server* server = nullptr;
+        if (!_load_balance.SmartSelection(&amp;id, &amp;server))
+            break;
+
+        LOG(INFO) &lt;&lt; &quot;select lowset load_factor server success, id :&quot;
+            &lt;&lt; id &lt;&lt; &quot; ip: &quot; &lt;&lt; server-&gt;_ip &lt;&lt; &quot; port: &quot; &lt;&lt; server-&gt;_port &lt;&lt; &quot;\n&quot;;
+
+        // 作客户端对后台编译运行服务发起http请求
+        httplib::Client cli(server-&gt;_ip, server-&gt;_port);
+        server-&gt;IncFactor();
+
+        if (auto res = cli.Post(
+            &quot;/compile_and_run&quot;,
+            compile_string, &quot;application/json;charset=utf-8&quot;))
+        {
+            if (res-&gt;status == 200) // http状态码为200
+            {
+                *out_json = res-&gt;body; // 获取编译服务返回json串
+                server-&gt;DecFactor();
+
+                LOG(INFO) &lt;&lt; &quot;judge mudel resquest compile_and_run service success\n&quot;;
+                break;
+            }
+            server-&gt;DecFactor();
+        }
+        else // 请求失败
+        {
+            LOG(ERROR) &lt;&lt; &quot;request compile_and_run server failed, id: &quot;
+                &lt;&lt; id &lt;&lt; &quot; ip: &quot; &lt;&lt; server-&gt;_ip &lt;&lt; &quot; port: &quot; &lt;&lt; server-&gt;_port
+                &lt;&lt; &quot;, maybe this server is offlined\n&quot;;
+
+            _load_balance.OfflineServer(id); // 记录离线主机id
+            _load_balance.ShowOnlineSvrList(); // for debug
+        }
+    }
+}
+</code></pre>
+<p> </p>
+<h2 id="3-前端页面和数据库化">3. 前端页面和数据库化</h2>
+<p>我们作为后端开发，只用三个前端网页即可，作用就是感受整体项目的一致性。</p>
+<table>
+<thead>
+<tr>
+<th>网页</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OJ首页</td>
+<td>非常简单，只有一个跳转到题库列表的链接功能。</td>
+</tr>
+<tr>
+<td>题库列表</td>
+<td>利用表格的形式展示题库中所有的题目信息。</td>
+</tr>
+<tr>
+<td>题目编写</td>
+<td>单个指定题目的详情展示和代码编写页面，具有代码提交功能。</td>
+</tr>
+</tbody>
+</table>
+<p>对于前端，了解即可。相对重点关注前后端交互的部分。</p>
+<h3 id="31-oj首页">3.1 OJ首页</h3>
+<pre><code class="language-html">&lt;!-- OJ首页 --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;OJ主页&lt;/title&gt;
+    &lt;style&gt;
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        .container .navbar {
+            width: 100%;
+            height: 50px;
+            background-color: #343333;
+            overflow: hidden;
+        }
+
+        .container .navbar a {
+            display: inline-block;
+            width: 40px;
+            color: #f5f5f7;
+            font-size: 15px;
+            font-family: &quot;PingFang SC&quot;;
+            line-height: 40px;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .container .content {
+            display: block;
+            width: 800px;
+            margin: 0px auto;
+            text-align: center;
+            text-decoration: none;
+            font-size: larger;
+            font-family: &quot;PingFang SC&quot;;
+            line-height: 50px;
+            margin-top: 200px;
+        }
+
+        .container .content p {
+            text-decoration: none;
+            font-size: 17px;
+        }
+
+        .container .content a {
+            text-decoration: none;
+            font-size: 17px;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+    &lt;div class=&quot;container&quot;&gt;
+
+        &lt;!-- 导航栏 --&gt;
+        &lt;div class=&quot;navbar&quot;&gt;
+            &lt;a href=&quot;#&quot;&gt;首页&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;题库&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;学习&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;竞赛&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;讨论&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;求职&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;登录&lt;/a&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 网页内容 --&gt;
+        &lt;div class=&quot;content&quot;&gt;
+            &lt;h2&gt;欢迎来到我的OJ在线编程平台&lt;/h2&gt;
+            &lt;p&gt;由开发者yyo独立开发的一款在线判题平台&lt;/p&gt;
+            &lt;a href=&quot;/all_questions&quot;&gt;点我开始编写题目啦&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;
+</code></pre>
+<h3 id="32-题库列表">3.2 题库列表</h3>
+<img src="https://img.gejiba.com/images/9cb21fd09376141b27d5ed3567a33cdd.png" a style="zoom:50%;" >
+<pre><code class="language-html">&lt;!-- 题库列表 --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Online Judge - question list&lt;/title&gt;
+    &lt;style&gt;
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .container .navbar {
+            width: 100%;
+            height: 50px;
+            background-color: #343333;
+            overflow: hidden;
+        }
+
+        .container .navbar a {
+            display: inline-block;
+            width: 40px;
+            color: #f5f5f7;
+            font-size: 15px;
+            font-family: &quot;PingFang SC&quot;;
+            line-height: 40px;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .container .questions_list {
+            padding-top: 30px;
+            width: 800px;
+            height: 100%;
+            margin: 0px auto;
+            font-family: &quot;PingFang SC&quot;;
+            text-align: center;
+        }
+
+        /* .container .questions_list h1 {} */
+
+        .container .questions_list table {
+            padding-top: 20px;
+            width: 100%;
+            font-size: large;
+            background-color: rgb(250, 250, 250);
+        }
+
+        .container .questions_list table .item {
+            width: 100px;
+            height: 30px;
+            padding-top: 10px;
+            font-size: large;
+        }
+
+        .container .questions_list table .item a {
+            text-decoration: none;
+            color: black;
+
+        }
+
+        .container .questions_list table .item a:hover {
+            color: #3478F6;
+        }
+
+        .footer {
+            margin-top: 150px;
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            color: #9d9d9d;
+            background-color: #fbfbfb;
+            font-family: &quot;PingFang SC&quot;;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+    &lt;div class=&quot;container&quot;&gt;
+
+        &lt;!-- 导航栏 --&gt;
+        &lt;div class=&quot;navbar&quot;&gt;
+            &lt;a href=&quot;/&quot;&gt;首页&lt;/a&gt;
+            &lt;a href=&quot;/all_questions&quot;&gt;题库&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;学习&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;竞赛&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;讨论&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;求职&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;登录&lt;/a&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;questions_list&quot;&gt;
+            &lt;h1&gt;Online Judge 全部题目&lt;/h1&gt;
+            &lt;table&gt;
+                &lt;tr&gt;
+                    &lt;th class=&quot;item&quot;&gt;编号&lt;/th&gt;
+                    &lt;th class=&quot;item&quot;&gt;标题&lt;/th&gt;
+                    &lt;th class=&quot;item&quot;&gt;难度&lt;/th&gt;
+                &lt;/tr&gt;
+                {{#questions_list}}
+                &lt;tr&gt;
+                    &lt;td class=&quot;item&quot;&gt;{{number}}&lt;/td&gt;
+                    &lt;!-- 题目跳转链接 --&gt;
+                    &lt;td class=&quot;item&quot;&gt;&lt;a href=&quot;/question/{{number}}&quot;&gt;{{title}}&lt;/a&gt;&lt;/td&gt;
+                    &lt;td class=&quot;item&quot;&gt;{{difficulty}}&lt;/td&gt;
+
+                &lt;/tr&gt;
+                {{/questions_list}}
+            &lt;/table&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;div class=&quot;footer&quot;&gt;
+        &lt;hr style=&quot;opacity:0.4;&quot;&gt;
+        &lt;p&gt;@yourfriendyo&lt;/p&gt;
+
+    &lt;/div&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;
+</code></pre>
+<h3 id="33-题目编写">3.3 题目编写</h3>
+<img src="https://img.gejiba.com/images/ce89f5ae08c922f8e6bba84c2bb5b233.png" style="zoom:50%;" >
+<p>网页编写代码的话，我们可以使用ACE在线代码编辑器。</p>
+<p>原生js较为复杂，我们使用更简单的JQuery框架，来进行我们的前后端交互。</p>
+<pre><code class="language-html">&lt;!-- 题目编写 --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+    &lt;title&gt;{{number}}.{{title}}&lt;/title&gt;
+    &lt;!-- 引入ACE CDN --&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js&quot; type=&quot;text/javascript&quot;
+        charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js&quot; type=&quot;text/javascript&quot;
+        charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+    &lt;!-- 引入jquery CDN --&gt;
+    &lt;script src=&quot;http://code.jquery.com/jquery-2.1.1.min.js&quot;&gt;&lt;/script&gt;
+
+    &lt;style&gt;
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .container .navbar {
+            width: 100%;
+            height: 50px;
+            background-color: #343333;
+            overflow: hidden;
+        }
+
+        .container .navbar a {
+            display: inline-block;
+            width: 40px;
+            color: #f5f5f7;
+            font-size: 15px;
+            font-family: &quot;PingFang SC&quot;;
+            line-height: 40px;
+            text-decoration: none;
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+
+        .container .navbar a:hover {
+            font-weight: bold;
+        }
+
+        .container .part1 {
+            width: 100%;
+            height: 600px;
+            overflow: hidden;
+        }
+
+        .container .part1 .left_desc {
+            width: 50%;
+            height: 600px;
+            float: left;
+            overflow: scroll;
+        }
+
+        .container .part1 .left_desc h3 {
+            padding-top: 10px;
+            padding-left: 10px;
+        }
+
+        .container .part1 .left_desc pre {
+            padding-top: 10px;
+            padding-left: 10px;
+            font-size: medium;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        .container .part1 .right_code .ace_text-input {
+            width: 50%;
+            float: right;
+            font-family: 'Courier New', 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', sans-serif;
+        }
+
+        .container .part1 .right_code .ace_editor {
+            height: 600px;
+        }
+
+        .container .part2 {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .container .part2 .result {
+            width: 300px;
+            float: left;
+        }
+
+        .container .part2 .btn-submit {
+            width: 120px;
+            height: 50px;
+            font-size: large;
+            float: right;
+            background-color: #26bb9c;
+            color: #FFF;
+            border: 0px;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
+        .container .part2 button:hover {
+            color: green;
+        }
+
+        .container .part2 .result {
+            margin-top: 15px;
+            margin-left: 15px;
+            font-size: large;
+            font-family: 'Dejavu Sans Mono', 'Courier New';
+        }
+
+        .container .part2 .result pre {
+            font-size: medium;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;!-- 导航栏， 功能不实现--&gt;
+        &lt;div class=&quot;navbar&quot;&gt;
+            &lt;a href=&quot;/&quot;&gt;首页&lt;/a&gt;
+            &lt;a href=&quot;/all_questions&quot;&gt;题库&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;竞赛&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;讨论&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;求职&lt;/a&gt;
+            &lt;a href=&quot;#&quot;&gt;登录&lt;/a&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 左右呈现，题目描述和预设代码 --&gt;
+        &lt;div class=&quot;part1&quot;&gt;
+            &lt;div class=&quot;left_desc&quot;&gt;
+                &lt;h3&gt;&lt;span id=&quot;number&quot;&gt;{{number}}&lt;/span&gt; . {{title}} _ {{difficulty}}&lt;/h3&gt;
+                &lt;pre&gt;{{desc}}&lt;/pre&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;right_code&quot;&gt;
+                &lt;pre id=&quot;code&quot; class=&quot;ace_editor&quot;&gt;&lt;textarea class=&quot;ace_text-input&quot;&gt;{{header_code}}&lt;/textarea&gt;&lt;/pre&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 提交并且得到结果，并显示 --&gt;
+        &lt;div class=&quot;part2&quot;&gt;
+            &lt;div class=&quot;result&quot;&gt;&lt;/div&gt;
+            &lt;button class=&quot;btn-submit&quot; onclick=&quot;submit()&quot;&gt;提交代码&lt;/button&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        //初始化对象
+        editor = ace.edit(&quot;code&quot;);
+
+        editor.setTheme(&quot;ace/theme/monokai&quot;);
+        editor.session.setMode(&quot;ace/mode/c_cpp&quot;);
+
+        // 字体
+        editor.setFontSize(15);
+        editor.getSession().setTabSize(4);
+        editor.setReadOnly(false);
+
+        // 启用提示菜单
+        ace.require(&quot;ace/ext/language_tools&quot;);
+        editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableSnippets: true,
+            enableLiveAutocompletion: true
+        });
+
+        // 提交信息
+        function submit() {
+            //1. 收集数据，题号和代码
+            var code = editor.getSession().getValue();
+            var number = $(&quot;.container .part1 .left_desc h3 #number&quot;).text();
+
+            //2. 构建json，通过ajax并向后台发起请求
+            var judge_url = &quot;/judge/&quot; + number;
+            $.ajax({
+                method: 'Post',
+                url: judge_url,
+                dataType: 'json', // 告知后端需要的数据格式
+
+                contentType: 'application/json; charset=utf-8', // 向后端发送的数据格式
+                data: JSON.stringify({
+                    'code': code,
+                    'input': ''
+                }),
+
+                //3. 得到后台结果，显示到前端页面中
+                success: function (data) // 交互成功后执行的回调函数
+                {
+                    show_result(data);
+                }
+            });
+        }
+
+        function show_result(data) {
+            var result_div = $(&quot;.container .part2 .result&quot;);
+
+            var reason_div = $(&quot;&lt;p&gt;&quot;, {
+                text: data.reason
+            });
+            reason_div.appendTo(result_div);
+
+            if (data.status == 0) {
+                var stdout_lable = $(&quot;&lt;pre&gt;&quot;, {
+                    text: data.stdout
+                });
+                stdout_lable.appendTo(result_div);
+
+                var stderr_lable = $(&quot;&lt;pre&gt;&quot;, {
+                    text: data.stderr
+                });
+                stdout_lable.appendTo(result_div);
+            }
+            else { } // 编译失败
+        }
+
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h3 id="34-数据库化">3.4 数据库化</h3>
+<p>原本我们的题库采用的是文件的形式存储在项目目录下的：</p>
+<pre><code class="language-shell">oj_server
+└── questions_all      # 题库中每个题目的配套文件 
+    ├── 1
+    │   ├── desc.txt
+    │   ├── header.cpp
+    │   └── tail.cpp
+    ├── 2
+    │   ├── desc.txt
+    │   ├── header.cpp
+    │   └── tail.cpp
+    └── questions.conf
+    │
+    └──  # ...
+</code></pre>
+<blockquote>
+<p>现在我们要将其放到数据库中，摆脱对文件的依赖。我会保留一个文件版<code>oj_server_file_version</code>板块。</p>
+</blockquote>
+<p>首先我们要有一个能够远程登录的MySQL用户，然后我们就可以设计表结构并开始编码。不过目前项目整体难度已经不小且成本不低，所以我们计划用一张表<code>oj_questions</code>就完成数据库化的任务。</p>
+<pre><code class="language-mysql">create user oj_client@'%' identified by 'OJoj_123456';
+create database oj;
+use oj;
+grant all on oj.* to oj_client@'%';
+</code></pre>
+<p>我们将<code>question.conf</code>题库列表文件和<code>questions_all/(+d)</code>单个题目的相关文件设计到一张表中。</p>
+<p>执行下面sql语句构建和填充库表。</p>
+<pre><code class="language-mysql">use oj;
+
+create table if not exists `oj_questions` (
+	`number` int primary key auto_increment comment '题目编号',
+	`title` varchar(128) NOT NULL comment '题目标题',
+	`difficulty` varchar(8) NOT NULL comment '题目难度',
+	`dsec` text NOT NULL comment '题目描述',
+	`header` text NOT NULL comment '题目预设代码',
+	`tail` text NOT NULL comment '题目测试用例代码',
+	`cpu_lim` int default 1 comment '题目的cpu时间',
+	`mem_lim` int default 40960 comment '题目的内存限制'
+)engine=InnoDB default charset=utf8;
+
+desc oj_questions;
+
+INSERT INTO oj.oj_questions
+(`number`, title, difficulty, dsec, header, tail, cpu_lim, mem_lim)
+VALUES(1, '两数之和', '简单', '给定一个整数数组`nums`和一个整数目标值 `target`，请你在该数组中找出**和为目标值**`target`的那**两个**整数，并返回它们的数组**下标**。
+
+你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
+
+你可以按任意顺序返回答案。
+
+示例 1：
+```
+输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
+```
+
+示例 2：
+```
+输入：nums = [3,2,4], target = 6
+输出：[1,2]
+```
+
+示例 3：
+```
+输入：nums = [3,3], target = 6
+输出：[0,1]
+```
+
+提示：
+
+```
+2 &lt;= nums.length &lt;= 104
+-109 &lt;= nums[i] &lt;= 109
+-109 &lt;= target &lt;= 109
+```
+
+只会存在一个有效答案
+
+进阶：你可以想出一个时间复杂度小于 O(n2) 的算法吗？', '#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+class Solution {
+public:
+    vector&lt;int&gt; twoSum(vector&lt;int&gt;&amp; nums, int target) {
+        // coding here...
+
+    }
+};', '// g++ -D COMPILER_SERVER 编译代码时加宏定义即可去掉下面调包含语句
+#ifndef COMPILER_SERVER
+#include &quot;header.cpp&quot;
+#endif
+
+void Test1()
+{
+    vector&lt;int&gt; nums = { 2,7,11,15 };
+    vector&lt;int&gt; ret = Solution().twoSum(nums, 9);
+    if (find(ret.begin(), ret.end(), 0) != ret.end() &amp;&amp;
+        find(ret.begin(), ret.end(), 1) != ret.end())
+    {
+        std::cout &lt;&lt; &quot;通过测试用例1&quot; &lt;&lt; std::endl;
+    }
+    else
+    {
+        std::cout &lt;&lt; &quot;测试用例1失败&quot; &lt;&lt; std::endl;
+    }
+}
+
+void Test2()
+{
+    vector&lt;int&gt; nums = { 3,2,4 };
+    vector&lt;int&gt; ret = Solution().twoSum(nums, 6);
+    if (find(ret.begin(), ret.end(), 2) != ret.end() &amp;&amp;
+        find(ret.begin(), ret.end(), 4) != ret.end())
+    {
+        std::cout &lt;&lt; &quot;通过测试用例2&quot; &lt;&lt; std::endl;
+    }
+    else
+    {
+        std::cout &lt;&lt; &quot;测试用例2失败&quot; &lt;&lt; std::endl;
+    }
+}
+
+void Test3()
+{
+    vector&lt;int&gt; nums = { 3,3 };
+    vector&lt;int&gt; ret = Solution().twoSum(nums, 6);
+    if (find(ret.begin(), ret.end(), 0) != ret.end() &amp;&amp;
+        find(ret.begin(), ret.end(), 1) != ret.end())
+    {
+        std::cout &lt;&lt; &quot;通过测试用例1&quot; &lt;&lt; std::endl;
+    }
+    else
+    {
+        std::cout &lt;&lt; &quot;测试用例1失败&quot; &lt;&lt; std::endl;
+    }
+}
+
+int main()
+{
+    Test1();
+    Test2();
+    Test3();
+
+    return 0;
+}', 1, 30720);
+
+INSERT INTO oj.oj_questions
+(`number`, title, difficulty, dsec, header, tail, cpu_lim, mem_lim)
+VALUES(2, '求最大值', '简单', '输入10个整数，要求输出其中的最大值。
+
+输入描述:
+
+测试数据有多组，每组10个整数。
+
+输出描述:
+
+示例1
+
+输入：10 22 23 152 65 79 85 96 32 1
+
+输出：max=152', '#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+class Solution
+{
+public:
+    int Max(const vector&lt;int&gt;&amp; nums)
+    {
+        //coding here...
+
+    }
+};', '// g++ -D COMPILER_SERVER 编译代码时加宏定义即可去掉下面调包含语句
+#ifndef COMPILER_SERVER
+#include &quot;header.cpp&quot;
+#endif
+
+void Test1()
+{
+    vector&lt;int&gt; nums = { 10,22,23,152,65,79,85,96,32,1 };
+    if (Solution().Max(nums) == 152)
+        std::cout &lt;&lt; &quot;测试用例1通过&quot; &lt;&lt; std::endl;
+    else
+        std::cout &lt;&lt; &quot;测试用例1失败&quot; &lt;&lt; std::endl;
+}
+
+void Test2()
+{
+    vector&lt;int&gt; nums = { 2,34,5,243,351,412,2,8,56,89,138, };
+    if (Solution().Max(nums) == 412)
+        std::cout &lt;&lt; &quot;测试用例2通过&quot; &lt;&lt; std::endl;
+    else
+        std::cout &lt;&lt; &quot;测试用例2失败&quot; &lt;&lt; std::endl;
+}
+
+int main()
+{
+    Test1();
+    Test2();
+
+    return 0;
+}', 1, 40960);
+</code></pre>
+<h4 id="代码连接mysql">代码连接MySQL</h4>
+<h5 id="安装环境">安装环境</h5>
+<p>要想使用C/C++的MySQL接口，必须使用MySQL提供的库。如果当初是用yum安装MySQL的直接就有。</p>
+<img src="https://img.gejiba.com/images/0e99187e24b6a23ff917f76efcc905fa.png" style="zoom:50%;" >
+<p>如果没有目录<code>/usr/include/mysql</code>，可以安装如下两个程序</p>
+<pre><code class="language-shell">$ rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022 # 如果出现GPG key不匹配的问题
+$ yum install -y libodb-mysql-devel.x86_64
+$ yum install -y soci-mysql-devel.x86_64 
+</code></pre>
+<p>链接静态库的时候，要指明库名和路径。</p>
+<pre><code class="language-makefile">mysql_test:mysql_test.cc
+        g++ -o $@ $^ -lmysqlclient -L/usr/lib64/mysql -std=c++11
+</code></pre>
+<blockquote>
+<p>这里有一个坑，库所在路径一定要指明<code>/usr/lib64/mysql</code>，如果找不到的话。</p>
+</blockquote>
+<p>我们的oj服务是基于MVC模式的，所以我们只需要改动<code>oj_model.hpp</code>即可。接口定义不变，只改变中各实现即可。</p>
+<pre><code class="language-cpp">#pragma once
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;unordered_map&gt;
+#include &lt;fstream&gt;
+#include &lt;mutex&gt;
+#include &lt;cassert&gt;
+#include &lt;mysql/mysql.h&gt;
+#include &quot;../comm/log.hpp&quot;
+#include &quot;../comm/util.hpp&quot;
+
+// oj_model.hpp 提供数据交互访问题目的模块功能
+namespace NS_Model
+{
+    using namespace NS_Log;
+    using namespace NS_Util;
+
+    struct Question
+    {
+        std::string _number;     // 题目编号
+        std::string _title;      // 题目标题
+        std::string _desc;       // 题目描述
+        std::string _difficulty; // 题目难度 简单 中等 困难
+
+        std::string _header;     // 题目的预设代码
+        std::string _tail;       // 题目的测试用例
+
+        int _cpu_limit;          // 题目的时间要求
+        int _mem_limit;          // 题目的空间要求
+    };
+
+    const std::string tb_name = &quot;oj_questions&quot;;
+    const char* host = &quot;127.0.0.1&quot;;
+    const char* user = &quot;oj_client&quot;;
+    const char* passwd = &quot;OJoj123456&quot;;
+    const char* db_name = &quot;oj&quot;;
+    const int port = 3306;
+
+    //MYSQL* _mysql_conn = nullptr;
+    class Model
+    {
+    private:
+        std::mutex mtx;
+        MYSQL* _mysql_conn = nullptr;
+
+    public:
+        Model()
+        {
+            if (_mysql_conn == nullptr)
+            {
+                std::lock_guard&lt;std::mutex&gt; lck(mtx);
+                if (_mysql_conn == nullptr)
+                {
+                    _mysql_conn = mysql_init(nullptr);
+
+                    // 连接数据库
+                    if (mysql_real_connect(_mysql_conn,
+                        host, user, passwd, db_name, port, nullptr, 0) == nullptr)
+                    {
+                        LOG(FATAL) &lt;&lt; &quot;connect mysql failed\n&quot;;
+                    }
+                    LOG(INFO) &lt;&lt; &quot;connect mysql success\n&quot;;
+
+                    mysql_set_character_set(_mysql_conn, &quot;utf8&quot;);
+                }
+            }
+        }
+
+        ~Model()
+        {
+            mysql_close(_mysql_conn);
+        }
+
+        bool QueryMysql(const std::string&amp; sql, std::vector&lt;Question&gt;* out)
+        {
+            if (mysql_query(_mysql_conn, sql.c_str()) != 0)
+            {
+                LOG(WARNING) &lt;&lt; sql &lt;&lt; &quot; execute error\n&quot;;
+                return false;
+            }
+
+            // 提取结果
+            MYSQL_RES* res = mysql_store_result(_mysql_conn);
+
+            int rows = mysql_num_rows(res);   // 行数
+            for (int i = 0; i &lt; rows; i++)
+            {
+                MYSQL_ROW row = mysql_fetch_row(res);
+
+                Question q;
+                q._number = row[0];
+                q._title = row[1];
+                q._difficulty = row[2];
+                q._desc = row[3];
+                q._header = row[4];
+                q._tail = row[5];
+                q._cpu_limit = atoi(row[6]);
+                q._mem_limit = atoi(row[7]);
+
+                out-&gt;push_back(q);
+            }
+
+            mysql_free_result(res);
+            return true;
+        }
+
+        bool GetAllQuestions(std::vector&lt;Question&gt;* out)
+        {
+            std::string sql = &quot;select * from &quot; + tb_name;
+            return QueryMysql(sql, out);
+        }
+
+        bool GetOneQuestion(const std::string&amp; number, Question* question)
+        {
+            std::vector&lt;Question&gt; res;
+            std::string sql = &quot;select * from &quot; + tb_name += &quot; where number=&quot; + number;
+            if (QueryMysql(sql, &amp;res))
+            {
+                if (res.size() == 1)
+                    *question = res[0];
+                else
+                    return false;
+            }
+            return true;
+        }
+    };
+}
+</code></pre>
+<p> </p>
+<h2 id="4-项目总结和项目扩展">4. 项目总结和项目扩展</h2>
+<h3 id="项目亮点">项目亮点</h3>
+<ul>
+<li>
+<p>使用多个知名的开源库，如<code>Boost</code>、<code>cpp-httplib</code>、<code>ctemplate</code>、<code>jsoncpp</code>。</p>
+</li>
+<li>
+<p>良好的负载均衡方案设计。</p>
+</li>
+<li>
+<p>支持多进程和多线程。</p>
+</li>
+<li>
+<p>有一定的前端技术美化项目。</p>
+</li>
+</ul>
+<h3 id="项目扩展">项目扩展</h3>
+<ol>
+<li>附带注册登录的录题功能；</li>
+<li>接入社区功能或者博客系统；</li>
+<li>把编译服务部署在docker上；</li>
+<li>将编译服务包装成远程过程调用服务<code>rest_rpc</code>替换http服务。</li>
+<li>丰富做题界面的功能，如下一题按钮。</li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%BC%8Foj">负载均衡式OJ</a>
+<ul>
+<li><a href="#1-%E9%A1%B9%E7%9B%AE%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83">1. 项目技术和开发环境</a>
+<ul>
+<li><a href="#%E9%A1%B9%E7%9B%AE%E6%8A%80%E6%9C%AF">项目技术</a></li>
+<li><a href="#%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83">开发环境</a></li>
+</ul>
+</li>
+<li><a href="#2-%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1%E5%92%8C%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF">2. 结构设计和实现思路</a>
+<ul>
+<li><a href="#21-%E6%97%A5%E5%BF%97%E6%A8%A1%E5%9D%97">2.1 日志模块</a></li>
+<li><a href="#22-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E6%A8%A1%E5%9D%97">2.2 编译运行模块</a>
+<ul>
+<li><a href="#%E7%BC%96%E8%AF%91%E6%A8%A1%E5%9D%97">编译模块</a></li>
+<li><a href="#%E8%BF%90%E8%A1%8C%E6%A8%A1%E5%9D%97">运行模块</a>
+<ul>
+<li><a href="#%E9%99%90%E5%88%B6%E6%97%B6%E7%A9%BA%E5%A4%8D%E6%9D%82%E5%BA%A6">限制时空复杂度</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E6%A8%A1%E5%9D%97">编译运行模块</a></li>
+<li><a href="#%E6%9C%8D%E5%8A%A1%E6%A8%A1%E5%9D%97">服务模块</a></li>
+</ul>
+</li>
+<li><a href="#23-oj%E6%9C%8D%E5%8A%A1%E6%A8%A1%E5%9D%97">2.3 OJ服务模块</a>
+<ul>
+<li><a href="#%E6%9C%8D%E5%8A%A1%E8%B7%AF%E7%94%B1%E6%A8%A1%E5%9D%97">服务路由模块</a></li>
+<li><a href="#%E9%A2%98%E7%9B%AE%E9%A2%98%E5%BA%93%E8%AE%BE%E8%AE%A1">题目题库设计</a></li>
+<li><a href="#model%E6%A8%A1%E5%9D%97">Model模块</a></li>
+<li><a href="#control%E6%A8%A1%E5%9D%97">Control模块</a></li>
+<li><a href="#view%E6%A8%A1%E5%9D%97">View模块</a></li>
+<li><a href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%8A%9F%E8%83%BD">负载均衡功能</a></li>
+<li><a href="#a-idjudgejudge%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0a"><a id="judge">Judge功能实现</a></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3-%E5%89%8D%E7%AB%AF%E9%A1%B5%E9%9D%A2%E5%92%8C%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8C%96">3. 前端页面和数据库化</a>
+<ul>
+<li><a href="#31-oj%E9%A6%96%E9%A1%B5">3.1 OJ首页</a></li>
+<li><a href="#32-%E9%A2%98%E5%BA%93%E5%88%97%E8%A1%A8">3.2 题库列表</a></li>
+<li><a href="#33-%E9%A2%98%E7%9B%AE%E7%BC%96%E5%86%99">3.3 题目编写</a></li>
+<li><a href="#34-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8C%96">3.4 数据库化</a>
+<ul>
+<li><a href="#%E4%BB%A3%E7%A0%81%E8%BF%9E%E6%8E%A5mysql">代码连接MySQL</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85%E7%8E%AF%E5%A2%83">安装环境</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-%E9%A1%B9%E7%9B%AE%E6%80%BB%E7%BB%93%E5%92%8C%E9%A1%B9%E7%9B%AE%E6%89%A9%E5%B1%95">4. 项目总结和项目扩展</a>
+<ul>
+<li><a href="#%E9%A1%B9%E7%9B%AE%E4%BA%AE%E7%82%B9">项目亮点</a></li>
+<li><a href="#%E9%A1%B9%E7%9B%AE%E6%89%A9%E5%B1%95">项目扩展</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://yourfriendyo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

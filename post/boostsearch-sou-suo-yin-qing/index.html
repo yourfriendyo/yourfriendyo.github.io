@@ -1,0 +1,1210 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BoostSearch搜索引擎 | AKA你的闺蜜的博客</title>
+<link rel="shortcut icon" href="https://yourfriendyo.github.io/favicon.ico?v=1676169831140">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://yourfriendyo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="BoostSearch搜索引擎 | AKA你的闺蜜的博客 - Atom Feed" href="https://yourfriendyo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="BoostSearch搜索引擎
+1. 项目的相关背景
+
+研发搜索引擎的公司，如百度、搜狗、360搜索，还有各大网站各种客户端也提供搜索功能。
+Boost官方网站是没有搜索功能的，所以我们为Boost实现一个站内搜索引擎。
+
+自行实现一个全网..." />
+    <meta name="keywords" content="Project" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://yourfriendyo.github.io">
+  <img class="avatar" src="https://yourfriendyo.github.io/images/avatar.png?v=1676169831140" alt="">
+  </a>
+  <h1 class="site-title">
+    AKA你的闺蜜的博客
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/cv.html" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              BoostSearch搜索引擎
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-15
+              </span>
+              <span>
+                28 min read
+              </span>
+              
+                <a href="https://yourfriendyo.github.io/tag/li__VqR4N/" class="post-tag">
+                  # Project
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://img.gejiba.com/images/20cfb315081a44ba6f0e501ef973ba68.png" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="boostsearch搜索引擎">BoostSearch搜索引擎</h1>
+<h2 id="1-项目的相关背景">1. 项目的相关背景</h2>
+<blockquote>
+<p>研发搜索引擎的公司，如百度、搜狗、360搜索，还有各大网站各种客户端也提供搜索功能。</p>
+<p>Boost官方网站是没有搜索功能的，所以我们为Boost实现一个站内搜索引擎。</p>
+</blockquote>
+<p>自行实现一个全网搜索引擎难度极大，是十分困难的，但是实现站内搜索，也就是只搜索网站内的内容，这样搜索的内容更垂直，数据量更小，也可以达到以小见大的效果。</p>
+<p>对于搜索结果，基本包含三个部分：网页标题、网页内容摘要、目标网页地址。</p>
+<img src="https://img.gejiba.com/images/f29d5b97db5c9f1445096530f5fc4630.png" alt="搜索结果组成图示" border="0" style="zoom: 50%;" >
+<blockquote>
+<p>对于图片，视频等的展示，暂不考虑。</p>
+</blockquote>
+<h2 id="2-搜索引擎的相关宏观原理">2. 搜索引擎的相关宏观原理</h2>
+<img src="https://img.gejiba.com/images/20cfb315081a44ba6f0e501ef973ba68.png" alt="搜索引擎宏观实现原理" border="0" style="zoom: 50%;" >
+<h2 id="3-相关技术栈和项目环境">3. 相关技术栈和项目环境</h2>
+<h3 id="31-技术栈">3.1 技术栈</h3>
+<ul>
+<li>后端：C/C++，C++11，STL，Boost标准库，Jsoncpp，cppjieba，cpp-httplib，</li>
+<li>前端：html5，jQuery，Ajax</li>
+</ul>
+<h3 id="32-项目环境">3.2 项目环境</h3>
+<p>Centos7云服务器，vim/gcc(g++)/Makefile，vscode</p>
+<p> </p>
+<h2 id="4-搜索引擎的具体原理">4. 搜索引擎的具体原理</h2>
+<h3 id="41-正排索引和倒排索引">4.1 正排索引和倒排索引</h3>
+<p>搜索引擎必然要对内容建立索引，才能更快的搜索和返回。有两种索引：正排索引和倒排索引。以如下内容举例：</p>
+<blockquote>
+<p>有如下两个文档，我们对这两个文档内容建立索引：</p>
+<ul>
+<li>文档1：雷军买了四斤小米</li>
+<li>文档2：雷军发布了小米手机</li>
+</ul>
+</blockquote>
+<p>建立索引本质就是建立文档内容和文档ID的关系。</p>
+<h4 id="正排索引">正排索引</h4>
+<table>
+<thead>
+<tr>
+<th>文档ID</th>
+<th>文档内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>雷军买了四斤小米</td>
+</tr>
+<tr>
+<td>2</td>
+<td>雷军发布了小米手机</td>
+</tr>
+</tbody>
+</table>
+<p><strong>正排索引就是从文档ID找到文档内容（文档内的关键字）</strong>。</p>
+<h4 id="分词">分词</h4>
+<p>我们拿到文档首先要对其编号，其次<strong>对文档内容进行分词，也就是得到文档内的关键字，为的是建立倒排索引和方便查找</strong>。</p>
+<ul>
+<li>文档1：雷军买了四斤小米：雷军/买/了/四斤/小米/四斤小米</li>
+<li>文档2：雷军发布了小米手机：雷军/发布/了/小米/小米手机</li>
+</ul>
+<blockquote>
+<p>其中对于“了”、“呢”、“的”、“啊”，这些词都被称为停止词或暂停词。这些词对我们建立索引是没有意义的，在分词的时候都会被去掉。</p>
+</blockquote>
+<h4 id="倒排索引">倒排索引</h4>
+<p>倒排索引就是根据文档内容，进行分词，整理具有唯一性不重复的关键字。再根据关键字找到关联文档ID的方案。</p>
+<table>
+<thead>
+<tr>
+<th>关键字（具有唯一性）</th>
+<th>文档ID</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>雷军</td>
+<td>1，2</td>
+</tr>
+<tr>
+<td>买</td>
+<td>1</td>
+</tr>
+<tr>
+<td>四斤</td>
+<td>1</td>
+</tr>
+<tr>
+<td>小米</td>
+<td>1，2</td>
+</tr>
+<tr>
+<td>四斤小米</td>
+<td>1</td>
+</tr>
+<tr>
+<td>发布</td>
+<td>2</td>
+</tr>
+<tr>
+<td>小米手机</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>模拟一次查找过程：</p>
+<ol>
+<li>用户输入：小米</li>
+<li><strong>在倒排索引中查找，提取出文档ID (1, 2)</strong></li>
+<li><strong>根据正排索引，找到文档内容</strong></li>
+<li>获取文档的标题、内容、描述、URL</li>
+<li>对文档结果进行摘要</li>
+<li>构建响应并返回</li>
+</ol>
+<blockquote>
+<p>大搜索引擎会对文档附加权重属性，以决定该文档内容展示的优先级。</p>
+</blockquote>
+<h3 id="42-认识标签和去标签">4.2 认识标签和去标签</h3>
+<p>https://www.boost.org</p>
+<p>将 boost_1_78_0/doc/html 中的数据作为需要建立索引的数据源。</p>
+<h4 id="去标签">去标签</h4>
+<p>现在我们首先将数据源中的各个文档去标签化。HTML 是标签化语言，所有的语句都被一对标签包裹起来，由左右尖括号括起来的就是标签，对数据本身是无意义的，所以我们首先要将其去掉。</p>
+<p>一般标签都是成对出现的，标签中的属性信息也是不需要的，只有标签内的数据是有用数据。</p>
+<pre><code class="language-html">&lt;title&gt;Chapter 37. Boost.STLInterfaces&lt;/title&gt;
+
+&lt;link rel=&quot;stylesheet&quot; href=&quot;../../doc/src/boostbook.css&quot; type=&quot;text/css&quot;&gt;
+
+&lt;td align=&quot;center&quot;&gt;&lt;a href=&quot;../../index.html&quot;&gt;Home&lt;/a&gt;&lt;/td&gt;
+</code></pre>
+<p>目标是：把每个文档都进行去标签，清洗后写到同一个文件中，每个文档的内容用<code>\3</code>分隔。<code>\3</code>是不可显的控制字符，不会污染净化后的数据。</p>
+<p> </p>
+<h2 id="5-数据清洗的模块">5. 数据清洗的模块</h2>
+<h3 id="51-大致框架">5.1 大致框架</h3>
+<p>数据清洗模块框架大致如此：</p>
+<ol>
+<li>遍历网页文件目录下的所有html文件获取上来并进行解析，</li>
+<li>把解析后的数据放到清洗后数据存放位置。</li>
+</ol>
+<pre><code class="language-cpp">const std::string src_path = &quot;data/input/&quot;; // html网页数据源路径
+const std::string output = &quot;data/output/raw.bin&quot;; // 文档数据清洗保存路径
+
+bool EnumFiles(const std::string&amp; src_path, std::vector&lt;std::string&gt;* file_list);
+bool ParseFiles(std::vector&lt;std::string&gt;&amp; file_list, std::vector&lt;DocInfo&gt;* parser_res);
+bool SaveFiles(const std::vector&lt;DocInfo&gt;&amp; parser_res, const std::string&amp; output);
+// 获取到的文件，解析其相关属性
+struct DocInfo {
+    std::string title;       // 文档标题
+    std::string content;     // 文档内容
+    std::string url;         // 文档地址
+};
+int main()
+{
+    std::vector&lt;std::string&gt; file_list; // 保存所有文件名
+    // 递归遍历所有数据源文件，将文件名保存到file_list中，以便后期读取
+    if (!EnumFiles(src_path, &amp;file_list)) {
+        std::cerr &lt;&lt; &quot;enum file error&quot; &lt;&lt; std::endl;
+        exit(1);
+    }
+    // 读取每个文件的内容，并进行解析
+    std::vector&lt;DocInfo&gt; parser_res;
+    if (ParseFiles(file_list, &amp;parser_res)) {
+        std::cerr &lt;&lt; &quot;enum file error&quot; &lt;&lt; std::endl;
+        exit(2);
+    }
+    // 把解析得到的内容写入到output中，以\3作为每个文档内容的分隔符
+    if (!SaveFiles(parser_res, output)) {
+        std::cerr &lt;&lt; &quot;save file error&quot; &lt;&lt; std::endl;
+        exit(3);
+    }
+    return 0;
+}
+</code></pre>
+<p>C++库对文件系统的支持并不是很好，所以我们采用boost库的文件操作API。</p>
+<blockquote>
+<p>centos安装boost开发库：</p>
+<pre><code class="language-shell">$ sudo yum install -y  boost-devel
+</code></pre>
+</blockquote>
+<h3 id="52-遍历文件">5.2 遍历文件</h3>
+<pre><code class="language-cpp">bool EnumFiles(const std::string&amp; src_path, std::vector&lt;std::string&gt;* file_list)
+{
+    namespace fs = boost::filesystem;
+    fs::path root_path(src_path); // 定义路径对象
+    if (!fs::exists(root_path)) {
+        std::cerr &lt;&lt; src_path &lt;&lt; &quot; is not exists&quot; &lt;&lt; std::endl;
+        return false;
+    }
+    // 定义对象迭代器对象
+    fs::recursive_directory_iterator end;
+    for (fs::recursive_directory_iterator iter(root_path); iter != end; iter++)
+    {
+        if (!fs::is_regular_file(*iter)) {            // 判断是否为普通文件
+            continue;
+        }
+        if (iter-&gt;path().extension() != &quot;.html&quot;) {    // 判断后缀是否为html
+            continue;
+        } // 当前的路径一定是一个合法文件路径
+
+        file_list-&gt;push_back(iter-&gt;path().string());  // 文件路径放到file_list中
+    }
+    return true;
+}
+</code></pre>
+<h3 id="53-解析文件">5.3 解析文件</h3>
+<h4 id="大致框架">大致框架</h4>
+<p>先读取文件，再依次解析文件的 title、content、url，解析成功后拷贝至解析结果数组中。</p>
+<pre><code class="language-cpp">bool ParseFiles(const std::vector&lt;std::string&gt;&amp; file_list, std::vector&lt;DocInfo&gt;* parser_res)
+{
+    for (auto&amp; file : file_list)
+    {
+        //读取文件
+        std::string result; // 读取的结果
+        if (!Util::ReadFile(file, &amp;result)) {
+            continue;
+        }
+        // 解析文件
+        DocInfo info;
+        // title
+        if (!ParserTitle(result, &amp;info._title)) {
+            continue;
+        }
+        // content
+        if (!ParserContent(result, &amp;info._content)) {
+            continue;
+        }
+        // url
+        if (!ParserUrl()) {
+            continue;
+        }
+        // 当前文档解析完毕，属性在info中，导入parser_res
+        parser_res-&gt;push_back(info); // 拷贝，低效
+    }
+    return true;
+}
+</code></pre>
+<h4 id="提取title">提取title</h4>
+<pre><code class="language-html">&lt;title&gt;Redirect to generated documentation&lt;/title&gt;
+</code></pre>
+<pre><code class="language-cpp">static bool ParserTitle(const std::string&amp; file, std::string* title)
+{
+    std::size_t begin = file.find(&quot;&lt;title&gt;&quot;); // 查找字符串&lt;title&gt;
+    if (begin == std::string::npos) {
+        return false;
+    }
+    std::size_t end = file.find(&quot;&lt;/title&gt;&quot;); // 查找字符串&lt;/title&gt;
+    if (end == std::string::npos) {
+        return false;
+    }
+
+    begin += std::string(&quot;&lt;title&gt;&quot;).size(); // 指向title位置
+    if (begin &gt; end)
+        return false;
+    
+    *title = std::string(begin, end);
+
+    std::cout &lt;&lt; &quot;title: &quot; &lt;&lt; title &lt;&lt; std::endl;
+
+    return true;
+}
+</code></pre>
+<h4 id="提取content">提取content</h4>
+<p>遍历html文件内容时，只要碰到<code>&gt;</code>就意味着当前标签被处理完毕，只要碰到<code>&lt;</code>就意味着即将处理新标签。</p>
+<p>用枚举类型描述这俩种状态，条件就绪更改状态，遇到内容时就插入到对应字符串中。</p>
+<pre><code class="language-cpp">bool ParserContent(const std::string&amp; file, std::string* content)
+{
+    //去标签，基于一个简易的状态机编写
+    enum STATUS {
+        LABLE,
+        CONTENT
+    };
+    enum STATUS s = LABLE;
+    for (char c : file) {
+        switch (s) {
+        case LABLE:
+            if (c == '&gt;') s = CONTENT;   // 可能进入读内容模式
+            break;
+        case CONTENT:
+            if (c == '&lt;') s = LABLE;     // 可能进入读标签模式
+            else {
+                // 处理掉原始内容中的\n，将其留作html解析之后的文本分隔符
+                if (c == '\n') c = '\0';
+                content-&gt;push_back(c);   //
+            }
+            break;
+        default:
+            std::cout &lt;&lt; &quot;unkown status&quot; &lt;&lt; std::endl;
+            break;
+        }
+    }
+    return true;
+}
+</code></pre>
+<h4 id="构建url">构建URL</h4>
+<p>boost库的官方文档和我们项目中的文档数据源，当然是可以对应起来的。构建一下即可。</p>
+<pre><code class="language-html">https://www.boost.org/doc/libs/1_80_0/doc/html/*
+/home/yyx/Project/BoostSearch/data/input/*
+</code></pre>
+<pre><code class="language-cpp">bool ParserUrl(const std::string&amp; file, std::string* url)
+{
+    std::string url_head = &quot;https://www.boost.org/doc/libs/1_80_0/doc/html/&quot;; // 构建前缀
+
+    int begin = file.rfind('/');
+    if (begin == std::string::npos) {
+        std::cout &lt;&lt; &quot;file suffix find error&quot; &lt;&lt; std::endl;
+        return false;
+    }
+
+    std::string url_tail(file, begin + 1);
+    *url = url_head + url_tail;
+
+    return true;
+}
+</code></pre>
+<h3 id="54-数据保存">5.4 数据保存</h3>
+<blockquote>
+<p>之前我们我们确定的解析目标是将所有文件的属性信息（title、content、url）保存在<code>unq.bin</code>中，每个文档的属性以<code>\3</code>分隔。</p>
+</blockquote>
+<pre><code class="language-cpp">title\ncontent\nurl\n \3 title\ncontent\nurl\n \3 title\ncontent\nurl\n \3
+</code></pre>
+<p>但为使用<code>getline</code>一次读取一行能够直接获得一个文档的所有属性信息，我们现将分隔符修改一下：</p>
+<pre><code class="language-cpp">title\3content\3url \n title\3content\3url \n title\3content\3url \n 
+</code></pre>
+<pre><code class="language-cpp">// 保存文件
+bool SaveFiles(const std::vector&lt;DocInfo&gt;&amp; parser_res, const std::string&amp; output)
+{
+#define SEP '\3'
+    std::ofstream ofs(output, std::ios::out | std::ios::binary); // 以二进制形式写入
+    if (!ofs.is_open()) {
+        std::cerr &lt;&lt; &quot;open &quot; &lt;&lt; output &lt;&lt; &quot; failed&quot; &lt;&lt; std::endl;
+        return false;
+    }
+    // 遍历数据
+    for (auto&amp; e : parser_res)
+    {
+        std::string out_string(e._title + SEP + e._content + SEP + e._url + '\n');
+        ofs.write(out_string.c_str(), out_string.size()); //写入文件
+    }
+    ofs.close();
+
+    return true;
+}
+</code></pre>
+<img src="https://img.gejiba.com/images/a5228901ccb6ac7bf860ae7d9ec3c094.png" border="0">
+<blockquote>
+<p>结果如图所示：属性之间的分隔符是<code>\3</code>显示为<code>^C</code>。文档之间的分隔符是<code>\n</code>不显示。</p>
+</blockquote>
+<p> </p>
+<h2 id="6-建立索引的模块">6. 建立索引的模块</h2>
+<h3 id="61-大体框架">6.1 大体框架</h3>
+<h4 id="正排索引-2">正排索引</h4>
+<p>正排索引是建立文档ID和内容之间的联系所以用一个结构体<code>DocInfo</code>就可以存放相关信息。</p>
+<pre><code class="language-cpp">struct DocInfo
+{
+    std::string _title;    // 标题
+    std::string _content;  // 内容
+    std::string _url;      // 地址
+    uint64_t _doc_id;      // 文档ID
+};
+</code></pre>
+<p>保存的数据结构我们采用数组即可，使用数组的下标作为文档ID。</p>
+<pre><code class="language-cpp">// 正排索引的数据结构使用数组，用下标表示文档ID
+std::vector&lt;DocInfo&gt; forward_index;  // 正排索引
+</code></pre>
+<h4 id="倒排索引-2">倒排索引</h4>
+<p>倒排索引建立关键字和多个其所在文档的相关信息的映射，相关信息有文档ID、文档中所有的关键字、权重等有关信息。</p>
+<p>我们把这个相关信息封装在结构体<code>InvertedElem</code>中：</p>
+<pre><code class="language-cpp">struct InvertedElem
+{
+    int _doc_id;           // 文档ID
+    std::string _word;     // 关键字
+    int _weight;           // 权重
+};
+</code></pre>
+<p>再通过哈希建立关键字和多个文档信息结构体的映射。我们将关键字所对应的多个文档信息结构体的集合叫做倒排拉链。</p>
+<pre><code class="language-cpp">// 倒排拉链
+typedef std::vector&lt;InvertedElem&gt; InvertedList;
+// 倒排索引一定是一个关键字和一组InvertedElem对象对应
+std::unordered_map&lt;std::string, InvertedList&gt; inverted_index; // 倒排索引
+</code></pre>
+<h4 id="索引结构">索引结构</h4>
+<pre><code class="language-cpp">class Index {
+    // 倒排拉链
+    typedef std::vector&lt;InvertedElem&gt; InvertedList;
+private:
+    std::vector&lt;DocInfo&gt; forward_index;                           // 正排索引
+    std::unordered_map&lt;std::string, InvertedList&gt; inverted_index; // 倒排索引
+public:
+    Index() {}
+    ~Index() {}
+    // 构建索引 -- 根据格式化后的文件名建立索引
+    bool BuildIndex(const std::string&amp; file_path);
+    
+    // 正排索引 -- 根据doc_id获得文档内容
+    DocInfo* GetDocInfo(uint64_t doc_id);
+    
+    // 倒排索引 -- 根据关键字word获得倒排拉链
+    InvertedList* GetInvertedList(const std::string&amp; word);
+};
+</code></pre>
+<ol>
+<li>首先要建立索引，通过传递来的解析后的文档名，打开该文件并建立索引。</li>
+<li>正排索引的本质是通过文档ID获得文档内容，也就是<code>GetDocInfo</code>。</li>
+<li>倒排索引的本质是通过关键字获得对应的文档的相关信息，即倒排拉链，也就是<code>GetInvertList</code>。</li>
+</ol>
+<h3 id="62-具体实现">6.2 具体实现</h3>
+<h4 id="正排倒排索引">正排倒排索引</h4>
+<p>正排索引倒排索引都是查找并返回对应数据结构中的一个节点。</p>
+<pre><code class="language-cpp">// 正排索引
+DocInfo* GetDocInfo(uint64_t doc_id)
+{
+    if (doc_id &gt;= _forward_index.size()) {
+        std::cerr &lt;&lt; &quot;doc_id error out of range&quot; &lt;&lt; std::endl;
+        return nullptr;
+    }
+    return &amp;_forward_index[doc_id];
+}
+// 倒排索引
+InvertedList* GetInvertedList(const std::string&amp; word)
+{
+    auto iter = _inverted_index.find(word);
+    if (iter == _inverted_index.end()) {
+        std::cerr &lt;&lt; &quot;get invertedlist failed, invaild word&quot; &lt;&lt; std::endl;
+        return nullptr;
+    }
+    return &amp;(iter-&gt;second);
+}
+</code></pre>
+<h4 id="构建索引">构建索引</h4>
+<p>构建索引就是先获取到数据清洗之后的文件，把每个文档内容提取出来，建立正派和倒排索引。</p>
+<pre><code class="language-cpp">// 构建索引 -- 根据格式化后的文件名建立索引
+bool BuildIndex(const std::string&amp; file_path)
+{
+    std::ifstream ifs(file_path, std::ios::in | std::ios::binary); // 打开解析后的文件
+    if (!ifs.is_open()) {
+        std::cerr &lt;&lt; &quot;build index error, open &quot; &lt;&lt; file_path &lt;&lt; &quot; failed&quot; &lt;&lt; std::endl;
+        return false;
+    }
+    std::string line; // 每个文件的内容占一行
+    while (getline(ifs, line)) {
+        DocInfo* info = BuildForwardIndex(line); // 建立正排索引
+        if (info == nullptr) {
+            std::cerr &lt;&lt; &quot;build line error, continue&quot; &lt;&lt; std::endl;  // for debug
+            continue;
+        }
+        BuildInvertedIndex(*info); // 构建倒排索引
+    }
+    return true;
+}
+</code></pre>
+<h5 id="建立正派索引">建立正派索引</h5>
+<p>首先是建立正派索引，提取出每个文档的信息我们先划分出标题、内容、URL，再添加上文档ID一并打包放到正派索引数组中。</p>
+<pre><code class="language-cpp">private:
+// 建立正排索引
+DocInfo* BuildForwardIndex(const std::string&amp; line)
+{
+    // 解析line字符串
+    std::string sep(&quot;\3&quot;); // 行内分隔符
+    std::vector&lt;std::string&gt; info_result; // 单行解析结果存储位置
+    Util::CutString(line, &amp;info_result, sep);
+
+    if (info_result.size() != 3) {
+        return nullptr;
+    }
+    // 切分后放到Docinfo结构体
+    DocInfo info;
+    info._title = info_result[0];
+    info._content = info_result[1];
+    info._url = info_result[2];
+    info._doc_id = _forward_index.size();
+    // 放到正排数组vector中
+    _forward_index.push_back(std::move(info));
+    return &amp;(_forward_index.back());
+}
+</code></pre>
+<h5 id="构建倒排索引">构建倒排索引</h5>
+<p>然后就是构建倒排索引，提取出文档信息后，</p>
+<ol>
+<li>将文档的标题、内容拿出来，进行分词，分出多个关键词；</li>
+<li>在遍历分出来的关键字，进行词频统计，计算词和文档的相关性；</li>
+</ol>
+<blockquote>
+<p>分词工具我们采用jieba分词工具。需要将deps下的limonp和arts-clone目录拷贝到include/jieba中。 github上的limonp目录在另一个项目需要单独下载再组合。</p>
+<p>使用示例：</p>
+</blockquote>
+<img src="https://img.gejiba.com/images/bb87a302e9bfb1a8c0e90aa5682c91fe.png" style="zoom:50%;" >
+<ol>
+<li>先建立词频统计的结构体，再建立词和词频结构体的映射表。</li>
+<li>针对标题和内容分别分词，再分别对每个词进行词频统计，统计到映射表中。</li>
+<li>创建并填充一个倒排元素，再将倒排结构体添加到倒排拉链中。</li>
+</ol>
+<pre><code class="language-cpp">bool BuildInvertedIndex(const DocInfo&amp; info)
+{
+    // 词频统计结构体
+    struct word_cnt // 针对一个词的数据统计
+    {
+        int _title_cnt;
+        int _content_cnt;
+
+        word_cnt() : _title_cnt(0), _content_cnt(0)
+        {}
+    };
+    std::unordered_map&lt;std::string, word_cnt&gt; word_map; // 暂存词与词频的映射表
+
+    /* 根据文档标题和内容，分词并进行词频统计 */
+
+    // 针对标题分词
+    std::vector&lt;std::string&gt; title_words;
+    Jieba::CutString(info._title, &amp;title_words);
+    // 遍历标题，进行词频统计
+    for (std::string s : title_words) {
+        boost::to_lower(s); // 统一转小写
+        word_map[s]._title_cnt++; // 查找对应关键词，将标题次数++
+    }
+
+    // 针对内容分词
+    std::vector&lt;std::string&gt; content_words;
+    Jieba::CutString(info._content, &amp;content_words);
+    // 遍历内容，进行词频统计
+    for (std::string s : content_words) {
+        boost::to_lower(s);
+        word_map[s]._content_cnt++;
+    }
+
+    /* 建立word和倒排拉链的映射 */
+#define TITLE_PRI 10
+#define CONTENT_PRI 1
+    for (auto&amp; word_pair : word_map)
+    {
+        InvertedElem item;
+        // 构建元素
+        item._doc_id = info._doc_id;
+        item._word = word_pair.first;
+        item._weight = TITLE_PRI * word_pair.second._title_cnt +
+            CONTENT_PRI * word_pair.second._content_cnt; // 设置权重
+        // 向拉链中添加元素
+        _inverted_index[word_pair.first].push_back(item);
+    }
+    return true;
+}
+</code></pre>
+<p> </p>
+<h2 id="7-搜索引擎的模块">7. 搜索引擎的模块</h2>
+<img src="https://img.gejiba.com/images/91a5f2607079bef0986e64353ac333eb.png" style="zoom:50%;"  >
+<p>如图所示，搜索关键字也会被服务端分词，再进行索引查找，最后将所有结果返回给用户。</p>
+<h3 id="71-大致结构">7.1 大致结构</h3>
+<pre><code class="language-cpp">class Searcher
+{
+private:
+    NS_Index::Index* index; // 供系统进行查找到索引
+public:
+    Searcher() {}
+    ~Searcher() {}
+    void InitSearcher(const std::string&amp; input)
+    {
+        // 获取index对象
+        _index = NS_Index::Index::GetInstance();
+        // 建立索引
+        _index-&gt;BuildIndex(input);
+    }
+    
+    // @param query 用户输入的数据
+    // @param json_string 返回给浏览器的结果
+    void Search(const std::string&amp; query, std::string* json_string);
+    //...
+};
+</code></pre>
+<h3 id="72-搜索功能">7.2 搜索功能</h3>
+<p>参数很明确，用户数据的字符串和数据处理后返回的字符串。</p>
+<ol>
+<li>首先要对用户发来的字符串分词，分出多个关键词；</li>
+<li>遍历多个关键词进行查找，将所有关键词对应的倒排拉链放到一个拉链中，并完成去重和排序工作；</li>
+<li>遍历总倒排拉链，将其中对应文档信息的构建Json串，并返回。</li>
+</ol>
+<pre><code class="language-cpp">// @param query 用户输入的数据
+// @param json_string 返回给浏览器的结果
+void Search(const std::string&amp; query, std::string* json_string)
+{
+    /* 对query分词 */
+    std::vector&lt;std::string&gt; words;
+    Jieba::CutString(query, &amp;words);
+
+    /* 对分出的多个关键词进行查找 */
+    NS_Index::Index::InvertedList ivtd_list_v; // 保存所有关键字的所有倒排拉链
+
+    for (auto word : words)
+    {
+        boost::to_lower(word);
+
+        NS_Index::Index::InvertedList* ivtd_list = _index-&gt;GetInvertedList(word);
+        if (ivtd_list == nullptr) {
+            continue;
+        }
+        // 汇总到总倒排拉链中
+        ivtd_list_v.insert(ivtd_list_v.end(), ivtd_list-&gt;begin(), ivtd_list-&gt;end());
+    }
+
+    /* 汇总所有查找结果，按照权重降序排序 */
+    // 去重
+    std::set&lt;NS_Index::InvertedElem&gt; unique_set(ivtd_list_v.begin(), ivtd_list_v.end());
+    ivtd_list_v.assign(unique_set.begin(), unique_set.end()); // 导入去重后结果
+
+    // 降序排序
+    std::sort(ivtd_list_v.begin(), ivtd_list_v.end(),
+              [](const NS_Index::InvertedElem&amp; e1, const NS_Index::InvertedElem&amp; e2) {
+                  return e1._weight &gt; e2._weight;
+              });
+
+    /* 将整体查找结果构建json序列化并返回 */
+    // json对象
+    Json::Value root;
+
+    // 获取关键字对应文档信息
+    for (auto&amp; item : ivtd_list_v)
+    {
+        NS_Index::DocInfo* info = _index-&gt;GetDocInfo(item._doc_id);
+        if (info == nullptr) {
+            continue;
+        }
+
+        // 序列化
+        Json::Value elem;
+        elem[&quot;title&quot;] = info-&gt;_title;
+        elem[&quot;desc&quot;] = GetDesc(info-&gt;_content, item._word);
+        elem[&quot;url&quot;] = info-&gt;_url;
+
+        root.append(elem);
+    }
+
+    Json::StyledWriter writer;
+    *json_string = writer.write(root); // 获取json串
+}
+</code></pre>
+<h4 id="获取摘要">获取摘要</h4>
+<pre><code class="language-cpp">std::string GetDesc(std::string&amp; content, const std::string&amp; word)
+{
+    // 找到首次出现位置
+    size_t pos = content.find(word);
+    if (pos == std::string::npos)
+        return &quot;NONE&quot;;
+
+    // 确定开始和结束位置
+    const size_t prev_step = 50; // 向前向后步长
+    const size_t next_step = 50;
+
+    size_t start = 0; // 起始结束默认值
+    size_t end = content.size() - 1;
+
+    // 从pos位置先前向后扩展step长度
+    if (pos - prev_step &gt;= 0)
+        start = pos - prev_step;
+    if (pos + next_step &lt;= content.size())
+     	end = pos + next_step;
+
+    // 截取子串并返回
+    return std::string(start, end - start + 1);
+}
+</code></pre>
+<p><img src="https://img.gejiba.com/images/c1a88cb30fd1e82dd3a356b7a4dc0918.png"/> </p>
+<h3 id="73-问题修复">7.3 问题修复</h3>
+<h4 id="无符号数错误">无符号数错误</h4>
+<p>使用无符号数进行存在负数的比较判断本身就是大忌。</p>
+<p>上述获取摘要的向前向后扩展一个步长长度的过程中，使<code>pos-prev_step</code>和0进行比较，如果<code>pos</code>小于步长，<code>pos-prev_step</code>就是负数，无符号数就变成很大的正数条件自然成立，就会导致<code>start</code>大于<code>end</code>。</p>
+<h4 id="查找方式错误">查找方式错误</h4>
+<p>使用<code>find</code>查找，是区分大小写的，而且我们在获取查询字段<code>query</code>的时候就已经将<code>query</code>全部转为小写，这样是无法查询到大写情况的。</p>
+<pre><code class="language-cpp">// 忽略大小写查找，避免找不到的情况
+auto iter = std::search(content.begin(), content.end(), word.begin(), word.end(),
+                        [](char x, char y) {
+                            return tolower(x) == tolower(y);
+                        });
+if (iter == content.end())
+    return &quot;NONE&quot;;
+
+int pos = iter - content.begin(); // 转化查找位置
+</code></pre>
+<h4 id="读取query方式错误">读取query方式错误</h4>
+<p>如果单纯使用<code>cin</code>读取，会将query按空格拆成多个字段分别查找，不能一次返回。</p>
+<pre><code class="language-cpp">getline(std::cin, query);
+</code></pre>
+<h4 id="权重计算错误">权重计算错误</h4>
+<p>我们前面解析文档内容的函数有一定的错误，直接读取文档内容没有越过标题部分。导致标题部分的关键词，在标题中统计一次，在内容处又被统计一次。并不影响使用。</p>
+<h4 id="汇总重复结果">汇总重复结果</h4>
+<p> </p>
+<h2 id="8-http服务的模块">8. http服务的模块</h2>
+<h3 id="81-工具安装和使用">8.1 工具安装和使用</h3>
+<h4 id="升级gcc">升级gcc</h4>
+<p>我们项目的重点在于搜索功能的服务，所以网络服务就调用<code>cpp-httplib</code>完成。</p>
+<p>https://gitee.com/welldonexing/cpp-httplib</p>
+<p>使用 cpp-httplib 需要高版本的 gcc，单独安装gcc很麻烦，安装高版本的工具集可以<code>scl</code>安装。</p>
+<pre><code class="language-shell">$ yum -y install centos-release-scl  # 1. 安装scl的yum源
+$ yum -y install devtoolset-8        # 2. 安装工具集
+$ scl enable devtoolset-8 bash       # 3. 启动工具集
+$ source /opt/rh/devtoolset-8/enable # 4. 加载工具集（出错执行）
+</code></pre>
+<p>https://blog.csdn.net/weixin_43364556/article/details/108315111</p>
+<p>注意我们安装的是工具集，没有卸载原有的gcc，工具集的启动仅本次会话有效。若想启动自动生效可以添加到<code>~/.bashrc</code>中。</p>
+<h4 id="安装测试cpp-httplib">安装测试cpp-httplib</h4>
+<blockquote>
+<p>如果cpp-httplib的版本太高，而gcc版本没有很新的话，还是会发生编译报错货运行出错的问题。</p>
+</blockquote>
+<p>直接克隆仓库到本地，可以直接放到也可以创建软连接到项目目录下。</p>
+<pre><code class="language-shell">$ git clone https://gitee.com/welldonexing/cpp-httplib ~/depts/
+$ ln -s ~/depts/cpp-httplib/ ~/Project/BoostSearch/cpp-httplib
+</code></pre>
+<h5 id="基本使用">基本使用</h5>
+<pre><code class="language-cpp">// 创建HTTP对象
+httplib::Server svr;
+
+// 设置web根目录
+svr.set_base_dir(root_path);
+
+// 注册GET方法
+svr.Get(&quot;/hi&quot;, [](const httplib::Request&amp; req, httplib::Response&amp; rsp) {
+    rsp.set_content(&quot;hello world，我是HTTP!&quot;, &quot;text/plain: charset=utf-8&quot;);
+});
+
+// 设置监听
+svr.listen(&quot;0.0.0.0&quot;, 8080);
+</code></pre>
+<h3 id="82-http服务代码">8.2 http服务代码</h3>
+<pre><code class="language-cpp">const std::string src_path = &quot;data/output/raw.bin&quot;;
+const std::string root_path = &quot;./wwwroot&quot;;
+int main() 
+{
+    Searcher* searcher = new Searcher();
+    searcher-&gt;InitSearcher(src_path);
+    // 创建HTTP对象
+    httplib::Server svr;
+    // 设置web根目录
+    svr.set_base_dir(root_path);
+    // 注册GET方法
+    svr.Get(&quot;/hi&quot;, [](const httplib::Request&amp; req, httplib::Response&amp; rsp) {
+        rsp.set_content(&quot;hello world，我是HTTP!&quot;, &quot;text/plain: charset=utf-8&quot;);
+        });
+    svr.Get(&quot;/s&quot;, [&amp;searcher](const httplib::Request&amp; req, httplib::Response&amp; rsp)
+        {
+            if (!req.has_param(&quot;word&quot;)) // 是否有参数
+                rsp.set_content(&quot;输入有误，请重新输入!&quot;, &quot;text/plain: charset=utf-8&quot;);
+            else
+            {   // 提取参数
+                std::string word = req.get_param_value(&quot;word&quot;);
+                std::cout &lt;&lt; &quot;user query : &quot; &lt;&lt; word &lt;&lt; std::endl;
+                std::string json_string;
+                // 进行搜索
+                searcher-&gt;Search(word, &amp;json_string);
+                // 返回结果
+                rsp.set_content(json_string, &quot;applicaton/json&quot;);
+            }
+        });
+    // 设置监听
+    svr.listen(&quot;0.0.0.0&quot;, 8080);
+
+    delete searcher;
+    return 0;
+}
+</code></pre>
+<p> </p>
+<h2 id="9-编写前端模块">9. 编写前端模块</h2>
+<ul>
+<li>html是超文本标记语言，由一个个标签构成网页的元素，属于网页的骨架。</li>
+<li>css是网页美化语言，可以对网页元素内容进行精确控制。</li>
+<li>javaScript可以对网页内容进行动态效果。</li>
+</ul>
+<h3 id="91-网页骨架">9.1 网页骨架</h3>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+    &lt;title&gt;Boost 搜索引擎&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;欢迎使用Boost库搜索引擎&lt;/h1&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;search&quot;&gt;
+            &lt;input type=&quot;text&quot; value=&quot;请输入搜索内容&quot;&gt;
+            &lt;button&gt;搜索一下&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;result&quot;&gt;
+            &lt;div class=&quot;item&quot;&gt;
+                &lt;a herf=&quot;#&quot;&gt;这是标题&lt;/a&gt;
+                &lt;p&gt;这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要&lt;/p&gt;
+                &lt;i&gt;https://gitee.com/welldonexing/cpp-httplib&lt;/i&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;item&quot;&gt;
+                &lt;a herf=&quot;#&quot;&gt;这是标题&lt;/a&gt;
+                &lt;p&gt;这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要&lt;/p&gt;
+                &lt;i&gt;https://gitee.com/welldonexing/cpp-httplib&lt;/i&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;item&quot;&gt;
+                &lt;a herf=&quot;#&quot;&gt;这是标题&lt;/a&gt;
+                &lt;p&gt;这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要&lt;/p&gt;
+                &lt;i&gt;https://gitee.com/welldonexing/cpp-httplib&lt;/i&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;item&quot;&gt;
+                &lt;a herf=&quot;#&quot;&gt;这是标题&lt;/a&gt;
+                &lt;p&gt;这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要这是摘要&lt;/p&gt;
+                &lt;i&gt;https://gitee.com/welldonexing/cpp-httplib&lt;/i&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h3 id="92-网页美化">9.2 网页美化</h3>
+<p>css设置样式的方式是：选择需要设置的标签，然后再制定该标签的样式。</p>
+<pre><code class="language-css">&lt;style&gt;
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+}
+.container {
+    width: 800px;
+    margin: 0px auto;
+    margin-top: 15px;
+}
+.container .search {
+    width: 100%;
+    height: 52px;
+}
+.container .search input {
+    /* 设置左浮动 */
+    float: left;
+    width: 600px;
+    height: 50px;
+    border: 1px solid black;
+    /* border: 1px solid #4A4C4E; */
+    border-right: none;
+    padding-left: 10px;
+    color: #9295A2;
+    font-size: 15px;
+}
+.container .search button {
+    float: left;
+    width: 140px;
+    height: 52px;
+    background-color: #63855C;
+    color: white;
+    font-size: 17px;
+    font-style: normal;
+    font-family: &quot;SF Pro SC&quot;, &quot;SF Pro Display&quot;, &quot;SF Pro Icons&quot;, &quot;PingFang SC&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
+}
+
+.container .result {
+    width: 100%;
+    font-family: &quot;SF Pro SC&quot;, &quot;SF Pro Display&quot;, &quot;SF Pro Icons&quot;, &quot;PingFang SC&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;
+}
+.container .result .item {
+    margin-top: 15px;
+}
+.container .result .item a {
+    text-decoration: none;
+    font-size: 20px;
+    color: #63855C;
+}
+.container .result .item a:hover {
+    text-decoration: underline;
+}
+.container .result .item p {
+    font-size: 15px;
+    margin-top: 5px;
+    color: #1d1d1f;
+}
+.container .result .item i {		
+    font-size: 13px;
+    font-style: normal;
+    color: #6e6e73;
+}
+&lt;/style&gt;
+</code></pre>
+<h3 id="93-前后端交互">9.3 前后端交互</h3>
+<p>使用原生的JS要求较高，我们采用JQuery框架。JQuery中可以使用ajax来进行前后端交互，如发起http请求。</p>
+<pre><code class="language-html">&lt;script&gt;
+    function Search() {
+    // alert(&quot;hello js!&quot;);
+    // 1. 提取数据
+    let query = $(&quot;.container .search input&quot;).val();
+    console.log(&quot;query: &quot; + query);
+    // 2. 发起http请求
+    $.ajax({
+        type: &quot;GET&quot;,
+        url: &quot;/s?word=&quot; + query,
+        success: function (data) {
+            console.log(data);
+            BuildHtml(data);
+        }
+    })
+}
+function BuildHtml(data) {
+    // 获取result标签
+    let tag_result = $(&quot;.container .result&quot;);
+    // 清空历史结果
+    tag_result.empty();
+
+    for (let elem of data) {
+        // console.log(elem.title);
+        // console.log(elem.url);
+        let tag_a = $(&quot;&lt;a&gt;&quot;, {
+            text: elem.title,
+            href: elem.url,
+            target: &quot;_blank&quot;
+        });
+        let tag_p = $(&quot;&lt;p&gt;&quot;, {
+            text: elem.desc
+        });
+        let tag_i = $(&quot;&lt;i&gt;&quot;, {
+            text: elem.url
+        });
+        let tag_div = $(&quot;&lt;div&gt;&quot;, {
+            class: &quot;item&quot;
+        });
+
+        tag_a.appendTo(tag_div);
+        tag_p.appendTo(tag_div);
+        tag_i.appendTo(tag_div);
+
+        tag_div.appendTo(tag_result);
+    }
+}
+&lt;/script&gt;
+</code></pre>
+<img src="https://img.gejiba.com/images/fb49a757d311fc7a4f255df1e50ad0a4.png" >
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#boostsearch%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E">BoostSearch搜索引擎</a>
+<ul>
+<li><a href="#1-%E9%A1%B9%E7%9B%AE%E7%9A%84%E7%9B%B8%E5%85%B3%E8%83%8C%E6%99%AF">1. 项目的相关背景</a></li>
+<li><a href="#2-%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%E7%9A%84%E7%9B%B8%E5%85%B3%E5%AE%8F%E8%A7%82%E5%8E%9F%E7%90%86">2. 搜索引擎的相关宏观原理</a></li>
+<li><a href="#3-%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF%E6%A0%88%E5%92%8C%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83">3. 相关技术栈和项目环境</a>
+<ul>
+<li><a href="#31-%E6%8A%80%E6%9C%AF%E6%A0%88">3.1 技术栈</a></li>
+<li><a href="#32-%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83">3.2 项目环境</a></li>
+</ul>
+</li>
+<li><a href="#4-%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%E7%9A%84%E5%85%B7%E4%BD%93%E5%8E%9F%E7%90%86">4. 搜索引擎的具体原理</a>
+<ul>
+<li><a href="#41-%E6%AD%A3%E6%8E%92%E7%B4%A2%E5%BC%95%E5%92%8C%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95">4.1 正排索引和倒排索引</a>
+<ul>
+<li><a href="#%E6%AD%A3%E6%8E%92%E7%B4%A2%E5%BC%95">正排索引</a></li>
+<li><a href="#%E5%88%86%E8%AF%8D">分词</a></li>
+<li><a href="#%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95">倒排索引</a></li>
+</ul>
+</li>
+<li><a href="#42-%E8%AE%A4%E8%AF%86%E6%A0%87%E7%AD%BE%E5%92%8C%E5%8E%BB%E6%A0%87%E7%AD%BE">4.2 认识标签和去标签</a>
+<ul>
+<li><a href="#%E5%8E%BB%E6%A0%87%E7%AD%BE">去标签</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5-%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97%E7%9A%84%E6%A8%A1%E5%9D%97">5. 数据清洗的模块</a>
+<ul>
+<li><a href="#51-%E5%A4%A7%E8%87%B4%E6%A1%86%E6%9E%B6">5.1 大致框架</a></li>
+<li><a href="#52-%E9%81%8D%E5%8E%86%E6%96%87%E4%BB%B6">5.2 遍历文件</a></li>
+<li><a href="#53-%E8%A7%A3%E6%9E%90%E6%96%87%E4%BB%B6">5.3 解析文件</a>
+<ul>
+<li><a href="#%E5%A4%A7%E8%87%B4%E6%A1%86%E6%9E%B6">大致框架</a></li>
+<li><a href="#%E6%8F%90%E5%8F%96title">提取title</a></li>
+<li><a href="#%E6%8F%90%E5%8F%96content">提取content</a></li>
+<li><a href="#%E6%9E%84%E5%BB%BAurl">构建URL</a></li>
+</ul>
+</li>
+<li><a href="#54-%E6%95%B0%E6%8D%AE%E4%BF%9D%E5%AD%98">5.4 数据保存</a></li>
+</ul>
+</li>
+<li><a href="#6-%E5%BB%BA%E7%AB%8B%E7%B4%A2%E5%BC%95%E7%9A%84%E6%A8%A1%E5%9D%97">6. 建立索引的模块</a>
+<ul>
+<li><a href="#61-%E5%A4%A7%E4%BD%93%E6%A1%86%E6%9E%B6">6.1 大体框架</a>
+<ul>
+<li><a href="#%E6%AD%A3%E6%8E%92%E7%B4%A2%E5%BC%95-2">正排索引</a></li>
+<li><a href="#%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95-2">倒排索引</a></li>
+<li><a href="#%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84">索引结构</a></li>
+</ul>
+</li>
+<li><a href="#62-%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0">6.2 具体实现</a>
+<ul>
+<li><a href="#%E6%AD%A3%E6%8E%92%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95">正排倒排索引</a></li>
+<li><a href="#%E6%9E%84%E5%BB%BA%E7%B4%A2%E5%BC%95">构建索引</a>
+<ul>
+<li><a href="#%E5%BB%BA%E7%AB%8B%E6%AD%A3%E6%B4%BE%E7%B4%A2%E5%BC%95">建立正派索引</a></li>
+<li><a href="#%E6%9E%84%E5%BB%BA%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95">构建倒排索引</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#7-%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%E7%9A%84%E6%A8%A1%E5%9D%97">7. 搜索引擎的模块</a>
+<ul>
+<li><a href="#71-%E5%A4%A7%E8%87%B4%E7%BB%93%E6%9E%84">7.1 大致结构</a></li>
+<li><a href="#72-%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD">7.2 搜索功能</a>
+<ul>
+<li><a href="#%E8%8E%B7%E5%8F%96%E6%91%98%E8%A6%81">获取摘要</a></li>
+</ul>
+</li>
+<li><a href="#73-%E9%97%AE%E9%A2%98%E4%BF%AE%E5%A4%8D">7.3 问题修复</a>
+<ul>
+<li><a href="#%E6%97%A0%E7%AC%A6%E5%8F%B7%E6%95%B0%E9%94%99%E8%AF%AF">无符号数错误</a></li>
+<li><a href="#%E6%9F%A5%E6%89%BE%E6%96%B9%E5%BC%8F%E9%94%99%E8%AF%AF">查找方式错误</a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96query%E6%96%B9%E5%BC%8F%E9%94%99%E8%AF%AF">读取query方式错误</a></li>
+<li><a href="#%E6%9D%83%E9%87%8D%E8%AE%A1%E7%AE%97%E9%94%99%E8%AF%AF">权重计算错误</a></li>
+<li><a href="#%E6%B1%87%E6%80%BB%E9%87%8D%E5%A4%8D%E7%BB%93%E6%9E%9C">汇总重复结果</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#8-http%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A8%A1%E5%9D%97">8. http服务的模块</a>
+<ul>
+<li><a href="#81-%E5%B7%A5%E5%85%B7%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8">8.1 工具安装和使用</a>
+<ul>
+<li><a href="#%E5%8D%87%E7%BA%A7gcc">升级gcc</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85%E6%B5%8B%E8%AF%95cpp-httplib">安装测试cpp-httplib</a>
+<ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8">基本使用</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#82-http%E6%9C%8D%E5%8A%A1%E4%BB%A3%E7%A0%81">8.2 http服务代码</a></li>
+</ul>
+</li>
+<li><a href="#9-%E7%BC%96%E5%86%99%E5%89%8D%E7%AB%AF%E6%A8%A1%E5%9D%97">9. 编写前端模块</a>
+<ul>
+<li><a href="#91-%E7%BD%91%E9%A1%B5%E9%AA%A8%E6%9E%B6">9.1 网页骨架</a></li>
+<li><a href="#92-%E7%BD%91%E9%A1%B5%E7%BE%8E%E5%8C%96">9.2 网页美化</a></li>
+<li><a href="#93-%E5%89%8D%E5%90%8E%E7%AB%AF%E4%BA%A4%E4%BA%92">9.3 前后端交互</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://yourfriendyo.github.io/post/fu-zai-jun-heng-shi-zai-xian-oj/">
+              <h3 class="post-title">
+                负载均衡式在线OJ
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://yourfriendyo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

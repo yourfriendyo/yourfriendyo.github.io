@@ -1,0 +1,272 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>现代c++2023 | AKA你的闺蜜的博客</title>
+<link rel="shortcut icon" href="https://yourfriendyo.github.io/favicon.ico?v=1676169831140">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://yourfriendyo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="现代c++2023 | AKA你的闺蜜的博客 - Atom Feed" href="https://yourfriendyo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1. 缺省参数
+第一题
+具有缺省参数的形参必须放在参数列表的右侧，这个描述并不严谨。
+void f(int,       int,       int c = 10);
+void f(int,       int b = 5, int);
+..." />
+    <meta name="keywords" content="C++" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://yourfriendyo.github.io">
+  <img class="avatar" src="https://yourfriendyo.github.io/images/avatar.png?v=1676169831140" alt="">
+  </a>
+  <h1 class="site-title">
+    AKA你的闺蜜的博客
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/cv.html" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              现代c++2023
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-02-02
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://yourfriendyo.github.io/tag/Qjysmr95f/" class="post-tag">
+                  # C++
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="1-缺省参数">1. 缺省参数</h2>
+<h3 id="第一题">第一题</h3>
+<p>具有缺省参数的形参必须放在参数列表的右侧，这个描述并不严谨。</p>
+<pre><code class="language-cpp">void f(int,       int,       int c = 10);
+void f(int,       int b = 5, int);
+void f(int a = 1, int,       int);
+
+void f(int a, int b, int c) {
+  std::cout &lt;&lt; a &lt;&lt; &quot; &quot; &lt;&lt; b &lt;&lt; &quot; &quot; &lt;&lt; c &lt;&lt; std::endl;
+}
+</code></pre>
+<blockquote>
+<p>上述代码是没错的。一个函数可以有多个声明。</p>
+</blockquote>
+<ul>
+<li>在函数声明中，</li>
+<li>在第一个具有缺省参数的形参之后的形参，必须也拥有缺省参数。</li>
+<li>这些形参的缺省参数，可以分别放在之前的、同一作用域内的若干条函数声明中。</li>
+</ul>
+<blockquote>
+<p>可以认为编译器会讲多条函数声明作整合。</p>
+</blockquote>
+<p>当然，函数声明可以相同，但不可以重复定义缺省参数。</p>
+<pre><code class="language-cpp">// 正确
+void f(int, int, int c = 1);
+void f(int, int, int c);
+// 正确
+void f(int, int, int);
+void f(int, int, int);
+
+// 错误
+void f(int, int, int c = 1);
+void f(int, int, int c = 1);
+// 错误
+void f(int, int, int c = 1);
+void f(int, int, int c = 2);
+</code></pre>
+<h3 id="第二题">第二题</h3>
+<pre><code class="language-cpp">class A 
+{
+    A(int i);
+    void func1(int i = 1);
+    void func2(int i, int j = 1);
+};
+
+A::A(int i = 1) // 错误，非默认构造函数变成默认构造函数
+{}
+void A::func1(int i = 2) // 错误，缺省参数重定义
+{}
+void A::func2(int i = 1, int j) // 正确，允许在函数定义处定义缺省参数
+{}
+</code></pre>
+<p>C++允许，在成员函数定义处给形参设置缺省参数，也会将其和类内函数声明中所提供的缺省参数进行组合。</p>
+<blockquote>
+<p>尽管我们并不推荐将缺省参数放在函数定义处。</p>
+</blockquote>
+<ul>
+<li>
+<p>对于非模版类的成员函数，</p>
+</li>
+<li>
+<p>给非默认的构造函数、拷贝构造、赋值重载的形参设置缺省参数，</p>
+<p>从而导致其变成默认的构造函数、拷贝构造、赋值重载。</p>
+</li>
+<li>
+<p>是不被允许的。</p>
+</li>
+</ul>
+<p>C++规定，模版类的成员函数的缺省参数必须放在函数声明处。</p>
+<h3 id="第三题">第三题</h3>
+<pre><code class="language-cpp">struct Base {
+  	virtual void f(int a = 1) { std::cout &lt;&lt; &quot;Base: &quot; &lt;&lt; a &lt;&lt; std::endl; }
+};
+struct Derived : Base {
+    void f(int a = 7) override { std::cout &lt;&lt; &quot;Dervied: &quot; &lt;&lt; a &lt;&lt; std::endl; }
+};
+int main() {
+    Base* ptr = new Derived;
+    ptr-&gt;f(); // Derived 1
+}
+</code></pre>
+<p>子类中虚函数的覆盖函数，不会从父类中获取缺省参数。但多态情况下，调用虚函数时，<strong>虚函数的缺省参数会根据调用对象的静态类型而定</strong>。</p>
+<p>编译时确定的类型就是变量的静态类型，运行时的类型就是变量的动态类型。</p>
+<blockquote>
+<p>所以多态调用子类函数，但缺省参数用的却是父类的。</p>
+</blockquote>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-%E7%BC%BA%E7%9C%81%E5%8F%82%E6%95%B0">1. 缺省参数</a>
+<ul>
+<li><a href="#%E7%AC%AC%E4%B8%80%E9%A2%98">第一题</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E9%A2%98">第二题</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E9%A2%98">第三题</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://yourfriendyo.github.io/post/http-fu-wu-qi/">
+              <h3 class="post-title">
+                HTTP服务器
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://yourfriendyo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
